@@ -1,0 +1,13 @@
+[Unit]
+Description=Expand the PulseArc root filesystem to the target disk
+After=local-fs.target
+Before=pulsearc.target
+ConditionPathExists=!/var/lib/pulsearc/.root-expanded
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/pulsearc-expand-root
+
+[Install]
+WantedBy=multi-user.target
+

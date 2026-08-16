@@ -1,0 +1,19 @@
+[game]
+title = "Hell on Rails"
+platform = "windows"
+entrypoint = "content/hell-on-rails.exe"
+working_directory = "content"
+arguments = []
+runner = "wine-ge"
+renderer = "opengl"
+
+[display]
+internal_width = 1920
+internal_height = 1080
+output = "auto"
+integer_scale = false
+
+[input]
+profile = "xbox"
+keyboard_overlay = false
+

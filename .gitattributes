@@ -1,0 +1,7 @@
+* text=auto
+*.sh text eol=lf
+profiledef.sh text eol=lf
+packages.x86_64 text eol=lf
+pacman.conf text eol=lf
+*.service text eol=lf
+*.target text eol=lf

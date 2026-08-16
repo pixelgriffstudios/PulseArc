@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+set -euo pipefail
+export PYTHONPATH=/usr/lib/pulsearc/core
+exec /usr/bin/python -m pulsearc.updater "$@"

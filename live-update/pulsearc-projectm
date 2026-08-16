@@ -1,0 +1,30 @@
+#!/usr/bin/env sh
+set -eu
+
+root="$HOME/.local/share/pulsearc/runners/projectm/root"
+binary="$root/usr/bin/projectM-pulseaudio"
+
+if [ ! -x "$binary" ]; then
+    printf 'PulseArc projectM runtime is missing: %s\n' "$binary" >&2
+    exit 127
+fi
+
+export LD_LIBRARY_PATH="$root/usr/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+export QT_PLUGIN_PATH="$root/usr/lib/qt/plugins"
+export QT_QPA_PLATFORM=xcb
+
+# projectM-pulseaudio records from PulseAudio's default *source*.  On systems
+# with motherboard audio plus HDMI, that default is commonly the microphone,
+# not the speakers that MPV is using.  Bind capture to the monitor belonging to
+# the current playback sink so radio, CDs, and local music always drive the
+# visualizer.  PULSE_SOURCE affects this process only and does not change the
+# user's system-wide microphone selection.
+if command -v pactl >/dev/null 2>&1; then
+    sink="$(pactl get-default-sink 2>/dev/null || true)"
+    monitor="${sink}.monitor"
+    if [ -n "$sink" ] && pactl list short sources 2>/dev/null | awk -v wanted="$monitor" '$2 == wanted { found=1 } END { exit !found }'; then
+        export PULSE_SOURCE="$monitor"
+    fi
+fi
+
+exec "$binary" "$@"

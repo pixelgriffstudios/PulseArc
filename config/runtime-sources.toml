@@ -1,0 +1,76 @@
+# This file records provenance. A release build converts every floating tag to
+# an exact version and SHA-256 in runtime-lock.toml before packaging.
+
+[policy]
+allow_arch_signed_repository = true
+allow_official_upstream_release = true
+allow_aur = false
+allow_unverified_binary = false
+embed_console_firmware = false
+
+[bundle.duckstation]
+project = "stenzek/duckstation"
+source = "official-github-release"
+license = "GPL-3.0-or-later"
+
+[bundle.cemu]
+project = "cemu-project/Cemu"
+source = "official-github-release"
+license = "MPL-2.0"
+
+[bundle.azahar]
+project = "azahar-emu/azahar"
+source = "official-github-release"
+license = "GPL-2.0-or-later"
+
+[bundle.vita3k]
+project = "Vita3K/Vita3K"
+source = "official-github-release"
+license = "GPL-2.0-only"
+
+[bundle.xemu]
+project = "xemu-project/xemu"
+source = "official-github-release"
+license = "GPL-2.0-or-later"
+
+[bundle.rpcs3]
+project = "RPCS3/rpcs3"
+source = "official-project-build"
+license = "GPL-2.0-only"
+
+[bundle.wine-ge]
+project = "GloriousEggroll/wine-ge-custom"
+source = "official-github-release"
+license = "LGPL-2.1-or-later"
+
+[bundle.dxvk-modern]
+project = "doitsujin/dxvk"
+source = "official-github-release"
+license = "Zlib"
+
+[bundle.dxvk-legacy]
+project = "doitsujin/dxvk"
+version = "1.10.3"
+source = "official-github-release"
+license = "Zlib"
+
+[bundle.vkd3d-proton]
+project = "HansKristian-Work/vkd3d-proton"
+source = "official-github-release"
+license = "LGPL-2.1-or-later"
+
+[bundle.pcsx2]
+project = "PCSX2/pcsx2"
+source = "official-github-release"
+license = "GPL-3.0-or-later"
+
+[bundle.dosbox-staging]
+project = "dosbox-staging/dosbox-staging"
+source = "official-github-release"
+license = "GPL-2.0-or-later"
+
+[bundle.playfusion-libretro-compat]
+project = "pixelgriffstudios/PlayFusion-Runtimes"
+version = "1.0.0"
+source = "official-github-release"
+license = "mixed-open-source; see the runtime collection notices"

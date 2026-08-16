@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+set -euo pipefail
+name="${1:?runner name required}"
+shift
+image="/usr/lib/pulsearc/runners/$name/$name.AppImage"
+[[ -x "$image" ]] || { printf 'Missing internal runtime: %s\n' "$name" >&2; exit 127; }
+exec "$image" "$@"
+

@@ -1,0 +1,170 @@
+#!/usr/bin/env bash
+# Install and launch Sony's PlayStation Plus PC cloud-streaming client.
+# This deliberately does not install or launch PS Remote Play.
+set -euo pipefail
+
+app_root="${XDG_DATA_HOME:-$HOME/.local/share}/pulsearc/apps/playstation-plus-cloud"
+prefix="$app_root/prefix"
+cache="$app_root/cache"
+logs="$app_root/logs"
+installer="$cache/PlayStationPlus.exe"
+vcredist_x86="$cache/vc_redist_2022_x86.exe"
+vcredist_x64="$cache/vc_redist_2022_x64.exe"
+vcredist_2013_x86="$cache/vc_redist_2013_x86.exe"
+vcredist_2013_x64="$cache/vc_redist_2013_x64.exe"
+official_installer_url="https://download-psplus.playstation.com/downloads/psplus/pc/latest"
+official_vcredist_x86_url="https://aka.ms/vs/17/release/vc_redist.x86.exe"
+official_vcredist_x64_url="https://aka.ms/vs/17/release/vc_redist.x64.exe"
+official_vcredist_2013_x86_url="https://download.microsoft.com/download/C/C/2/CC2DF5F8-4454-44B4-802D-5EA68D086676/vcredist_x86.exe"
+official_vcredist_2013_x64_url="https://download.microsoft.com/download/C/C/2/CC2DF5F8-4454-44B4-802D-5EA68D086676/vcredist_x64.exe"
+
+install -d -m 0700 "$app_root" "$cache" "$logs"
+exec 9>"$app_root/install.lock"
+
+find_client() {
+    local candidate
+    for candidate in \
+        "$prefix/drive_c/Program Files (x86)/PlayStationPlus/pspluslauncher.exe" \
+        "$HOME/.local/share/Steam/steamapps/compatdata/PlaystationPlusLauncher/pfx/drive_c/Program Files (x86)/PlayStationPlus/pspluslauncher.exe" \
+        "$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/PlayStationPlus/pspluslauncher.exe"
+    do
+        if [[ -f "$candidate" ]]; then
+            printf '%s\n' "$candidate"
+            return 0
+        fi
+    done
+    return 1
+}
+
+find_wine() {
+    local candidate
+    for candidate in \
+        /usr/bin/wine \
+        /usr/lib/pulsearc/runners/wine-ge/bin/wine
+    do
+        if [[ -x "$candidate" ]]; then
+            printf '%s\n' "$candidate"
+            return 0
+        fi
+    done
+    return 1
+}
+
+verify_pe() {
+    local file=$1 minimum=$2 maximum=$3 size magic
+    [[ -f "$file" ]] || return 1
+    size=$(stat -c '%s' "$file")
+    (( size >= minimum && size <= maximum )) || return 1
+    magic=$(od -An -N2 -tx1 "$file" | tr -d '[:space:]')
+    [[ "$magic" == "4d5a" ]]
+}
+
+download_official() {
+    local url=$1 allowed_prefix=$2 output=$3 minimum=$4 maximum=$5 temporary effective
+    temporary="$output.partial"
+    rm -f -- "$temporary"
+    effective=$(curl --fail --location --silent --show-error \
+        --proto '=https' --proto-redir '=https' --tlsv1.2 \
+        --connect-timeout 20 --retry 3 --retry-delay 2 \
+        --output "$temporary" --write-out '%{url_effective}' "$url")
+    [[ "$effective" == "$allowed_prefix"* ]] || {
+        rm -f -- "$temporary"
+        echo "The vendor download redirected outside its approved HTTPS host." >&2
+        return 1
+    }
+    verify_pe "$temporary" "$minimum" "$maximum" || {
+        rm -f -- "$temporary"
+        echo "The downloaded vendor installer failed validation." >&2
+        return 1
+    }
+    mv -f -- "$temporary" "$output"
+    chmod 0600 "$output"
+}
+
+install_client() {
+    local wine=$1
+    flock -n 9 || {
+        echo "The PlayStation Plus cloud client is already being installed." >&2
+        return 1
+    }
+
+    verify_pe "$installer" 1000000 1000000000 || \
+        download_official "$official_installer_url" \
+            "https://download-psplus.playstation.com/" "$installer" 1000000 1000000000
+
+    export WINEPREFIX="$prefix"
+    export WINEARCH=win64
+    export WINEDEBUG=-all
+    "$wine" wineboot --init >>"$logs/install.log" 2>&1
+    "$wine" "$installer" /q >>"$logs/install.log" 2>&1
+
+    find_client >/dev/null || {
+        echo "Sony's PlayStation Plus cloud client did not finish installing. See $logs/install.log" >&2
+        return 1
+    }
+}
+
+install_prerequisites() {
+    local wine=$1 marker="$app_root/.vcrun2013-2022-installed"
+    [[ -f "$marker" ]] && return 0
+
+    flock -x 9
+    [[ -f "$marker" ]] && return 0
+    verify_pe "$vcredist_x86" 500000 100000000 || \
+        download_official "$official_vcredist_x86_url" \
+            "https://download.visualstudio.microsoft.com/" "$vcredist_x86" 500000 100000000
+    verify_pe "$vcredist_x64" 500000 100000000 || \
+        download_official "$official_vcredist_x64_url" \
+            "https://download.visualstudio.microsoft.com/" "$vcredist_x64" 500000 100000000
+    verify_pe "$vcredist_2013_x86" 500000 100000000 || \
+        download_official "$official_vcredist_2013_x86_url" \
+            "https://download.microsoft.com/" "$vcredist_2013_x86" 500000 100000000
+    verify_pe "$vcredist_2013_x64" 500000 100000000 || \
+        download_official "$official_vcredist_2013_x64_url" \
+            "https://download.microsoft.com/" "$vcredist_2013_x64" 500000 100000000
+
+    export WINEPREFIX="$prefix"
+    export WINEARCH=win64
+    export WINEDEBUG=-all
+    "$wine" wineboot --init >>"$logs/install.log" 2>&1
+    "$wine" "$vcredist_2013_x86" /install /quiet /norestart >>"$logs/install.log" 2>&1 || true
+    "$wine" "$vcredist_2013_x64" /install /quiet /norestart >>"$logs/install.log" 2>&1 || true
+    "$wine" "$vcredist_x86" /install /quiet /norestart >>"$logs/install.log" 2>&1 || true
+    "$wine" "$vcredist_x64" /install /quiet /norestart >>"$logs/install.log" 2>&1 || true
+    touch "$marker"
+}
+
+if [[ "${1:-}" == "--status" ]]; then
+    find_client >/dev/null
+    exit $?
+fi
+
+wine=$(find_wine) || {
+    echo "PulseArc's Wine-GE runner is missing." >&2
+    exit 1
+}
+
+install_prerequisites "$wine"
+
+client=$(find_client || true)
+if [[ -z "$client" ]]; then
+    install_client "$wine"
+    client=$(find_client)
+fi
+
+case "$client" in
+    "$prefix"/*) export WINEPREFIX="$prefix" ;;
+    */PlaystationPlusLauncher/pfx/*) export WINEPREFIX="${client%%/drive_c/*}" ;;
+    */NonSteamLaunchers/pfx/*) export WINEPREFIX="${client%%/drive_c/*}" ;;
+    *) echo "Refusing an unexpected PlayStation Plus executable path." >&2; exit 1 ;;
+esac
+
+export WINEDEBUG=-all
+# QtWebEngine in Sony's AGL client can render as a blank surface when Wine's
+# fullscreen-FSR path is forced. PulseArc sizes the X11 window itself instead.
+unset WINE_FULLSCREEN_FSR
+exec >>"$logs/launch.log" 2>&1
+client_dir=$(dirname "$client")
+client_name=$(basename "$client")
+cd "$client_dir"
+exec "$wine" "$client_name"

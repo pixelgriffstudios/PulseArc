@@ -1,0 +1,15 @@
+newmtl keyboard-white-36
+Kd 0.880000 0.900000 0.880000
+
+newmtl monitor-white-37
+Kd 0.880000 0.900000 0.880000
+
+newmtl monitor_glass.001-38
+Kd 0.055000 0.105000 0.160000
+
+newmtl mouse-white-39
+Kd 0.880000 0.900000 0.880000
+
+newmtl pc-white-40
+Kd 0.880000 0.900000 0.880000
+

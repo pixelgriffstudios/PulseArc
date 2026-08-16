@@ -1,0 +1,7 @@
+[removable]
+supported = ["vfat", "exfat", "ntfs", "ext4", "btrfs", "xfs", "f2fs", "iso9660", "udf"]
+scan_roots = ["/run/media/gamer", "/media", "/mnt"]
+optical_read_only = true
+launch_from_read_only = true
+saves_on_system_drive = true
+

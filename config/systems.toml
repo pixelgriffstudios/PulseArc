@@ -1,0 +1,382 @@
+[runners.retroarch-mesen]
+kind = "retroarch"
+executable = "/usr/bin/retroarch"
+arguments = ["-L", "/usr/lib/libretro/mesen_libretro.so", "{content}"]
+package = "libretro-mesen"
+
+[runners.retroarch-nestopia]
+kind = "retroarch"
+executable = "/usr/bin/retroarch"
+arguments = ["-L", "/usr/lib/libretro/nestopia_libretro.so", "{content}"]
+package = "libretro-nestopia"
+
+[runners.retroarch-snes9x]
+kind = "retroarch"
+executable = "/usr/bin/retroarch"
+arguments = ["-L", "/usr/lib/libretro/snes9x_libretro.so", "{content}"]
+package = "libretro-snes9x"
+
+[runners.retroarch-mgba]
+kind = "retroarch"
+executable = "/usr/bin/retroarch"
+arguments = ["-L", "/usr/lib/libretro/mgba_libretro.so", "{content}"]
+package = "libretro-mgba"
+
+[runners.retroarch-genesis-plus-gx]
+kind = "retroarch"
+executable = "/usr/bin/retroarch"
+arguments = ["-L", "/usr/lib/libretro/genesis_plus_gx_libretro.so", "{content}"]
+package = "libretro-genesis-plus-gx"
+
+[runners.retroarch-blastem]
+kind = "retroarch"
+executable = "/usr/bin/retroarch"
+arguments = ["-L", "/usr/lib/libretro/blastem_libretro.so", "{content}"]
+package = "libretro-blastem"
+
+[runners.retroarch-picodrive]
+kind = "retroarch"
+executable = "/usr/bin/retroarch"
+arguments = ["-L", "/usr/lib/libretro/picodrive_libretro.so", "{content}"]
+package = "libretro-picodrive"
+
+[runners.retroarch-mupen64plus-next]
+kind = "retroarch"
+executable = "/usr/bin/retroarch"
+arguments = ["-L", "/usr/lib/libretro/mupen64plus_next_libretro.so", "{content}"]
+package = "libretro-mupen64plus-next"
+
+[runners.retroarch-fbneo]
+kind = "retroarch"
+executable = "/usr/bin/retroarch"
+arguments = ["-L", "/usr/lib/libretro/fbneo_libretro.so", "{content}"]
+package = "pulsearc-libretro-fbneo"
+
+[runners.retroarch-mame]
+kind = "retroarch"
+executable = "/usr/bin/retroarch"
+arguments = ["-L", "/usr/lib/libretro/mame_libretro.so", "{content}"]
+package = "libretro-mame"
+
+[runners.retroarch-melonds]
+kind = "retroarch"
+executable = "/usr/bin/retroarch"
+arguments = ["-L", "/usr/lib/libretro/melonds_libretro.so", "{content}"]
+package = "libretro-melonds"
+
+[runners.retroarch-beetle-psx-hw]
+kind = "retroarch"
+executable = "/usr/bin/retroarch"
+arguments = ["-L", "/usr/lib/libretro/mednafen_psx_hw_libretro.so", "{content}"]
+package = "libretro-beetle-psx-hw"
+
+[runners.duckstation]
+kind = "standalone"
+executable = "/usr/local/bin/pulsearc-appimage"
+arguments = ["duckstation", "-batch", "-fullscreen", "{content}"]
+package = "pulsearc-duckstation"
+
+[runners.pcsx2]
+kind = "standalone"
+executable = "/usr/local/bin/pulsearc-appimage"
+arguments = ["pcsx2", "-batch", "-fullscreen", "{content}"]
+package = "pulsearc-pcsx2"
+
+[runners.ppsspp]
+kind = "standalone"
+executable = "/usr/bin/PPSSPPSDL"
+arguments = ["{content}"]
+package = "ppsspp"
+
+[runners.dolphin]
+kind = "standalone"
+executable = "/usr/bin/dolphin-emu"
+arguments = ["--batch", "--confirm=false", "--exec={content}"]
+package = "dolphin-emu"
+
+[runners.cemu]
+kind = "standalone"
+executable = "/usr/local/bin/pulsearc-appimage"
+arguments = ["cemu", "-f", "-g", "{content}"]
+package = "pulsearc-cemu"
+
+[runners.azahar]
+kind = "standalone"
+executable = "/usr/local/bin/pulsearc-appimage"
+arguments = ["azahar", "{content}"]
+package = "pulsearc-azahar"
+
+[runners.vita3k]
+kind = "standalone"
+executable = "/usr/local/bin/pulsearc-appimage"
+arguments = ["vita3k", "-r", "{content}"]
+package = "pulsearc-vita3k"
+
+[runners.xemu]
+kind = "standalone"
+executable = "/usr/local/bin/pulsearc-appimage"
+arguments = ["xemu", "-dvd_path", "{content}", "-full-screen"]
+package = "pulsearc-xemu"
+
+[runners.rpcs3]
+kind = "standalone"
+executable = "/usr/local/bin/pulsearc-appimage"
+arguments = ["rpcs3", "--no-gui", "--fullscreen", "--input-config=PulseArc", "{content}"]
+package = "pulsearc-rpcs3"
+
+[runners.mame]
+kind = "standalone"
+executable = "/usr/bin/mame"
+arguments = ["-skip_gameinfo", "-nowindow", "{content}"]
+package = "mame"
+
+[runners.scummvm]
+kind = "standalone"
+executable = "/usr/bin/scummvm"
+arguments = ["--fullscreen", "--auto-detect", "--path={content_dir}"]
+package = "scummvm"
+
+[runners.dosbox-staging]
+kind = "standalone"
+executable = "/usr/local/bin/pulsearc-dosbox-staging"
+arguments = ["{content}", "-fullscreen"]
+package = "pulsearc-dosbox-staging"
+
+[runners.vice]
+kind = "standalone"
+executable = "/usr/bin/x64sc"
+arguments = ["-fullscreen", "{content}"]
+package = "vice-sdl2"
+
+[runners.mpv]
+kind = "media"
+executable = "/usr/bin/mpv"
+arguments = ["--fullscreen", "--no-terminal", "{content}"]
+package = "mpv"
+
+[runners.wine-ge]
+kind = "windows"
+executable = "/usr/local/bin/pulsearc-wine"
+arguments = ["{content}"]
+package = "pulsearc-wine-ge"
+
+[systems.nes]
+extensions = ["nes", "fds"]
+primary = "retroarch-mesen"
+fallbacks = ["retroarch-nestopia"]
+
+[systems.snes]
+extensions = ["sfc", "smc"]
+primary = "retroarch-snes9x"
+
+[systems.gameboy]
+extensions = ["gb"]
+primary = "retroarch-mgba"
+
+[systems.gameboy-color]
+extensions = ["gbc"]
+primary = "retroarch-mgba"
+
+[systems.gameboy-advance]
+extensions = ["gba"]
+primary = "retroarch-mgba"
+
+[systems.nintendo-ds]
+extensions = ["nds"]
+primary = "retroarch-melonds"
+
+[systems.nintendo-3ds]
+extensions = ["3ds", "cci", "cxi"]
+primary = "azahar"
+
+[systems.nintendo-64]
+extensions = ["z64", "n64", "v64"]
+primary = "retroarch-mupen64plus-next"
+
+[systems.master-system]
+extensions = ["sms"]
+primary = "retroarch-genesis-plus-gx"
+
+[systems.game-gear]
+extensions = ["gg"]
+primary = "retroarch-genesis-plus-gx"
+
+[systems.mega-drive]
+extensions = ["md", "gen"]
+primary = "retroarch-genesis-plus-gx"
+fallbacks = ["retroarch-blastem"]
+
+[systems.sega-32x]
+extensions = ["32x"]
+primary = "retroarch-picodrive"
+
+[systems.gamecube]
+extensions = ["gcm", "rvz", "iso"]
+primary = "dolphin"
+
+[systems.wii]
+extensions = ["wbfs", "rvz", "iso"]
+primary = "dolphin"
+
+[systems.wii-u]
+extensions = ["wud", "wux", "wua"]
+primary = "cemu"
+
+[systems.playstation]
+extensions = ["cue", "chd", "pbp"]
+primary = "duckstation"
+fallbacks = ["retroarch-beetle-psx-hw"]
+bios = ["scph5501.bin"]
+
+[systems.playstation-2]
+extensions = ["iso", "chd"]
+primary = "pcsx2"
+bios = ["PS2 BIOS supplied by user"]
+
+[systems.playstation-3]
+extensions = ["iso", "eboot.bin"]
+primary = "rpcs3"
+bios = ["PS3UPDAT.PUP supplied by user"]
+
+[systems.psp]
+extensions = ["iso", "cso", "pbp"]
+primary = "ppsspp"
+
+[systems.playstation-vita]
+extensions = ["vpk"]
+primary = "vita3k"
+
+[systems.dreamcast]
+extensions = ["gdi", "cdi", "chd"]
+primary = "retroarch-flycast"
+bios = ["dc_boot.bin", "dc_flash.bin"]
+
+[systems.arcade]
+extensions = ["zip", "7z"]
+primary = "retroarch-fbneo"
+fallbacks = ["retroarch-mame", "mame"]
+
+[systems.commodore-64]
+extensions = ["d64", "t64", "prg"]
+primary = "retroarch-vice-x64sc"
+fallbacks = ["vice"]
+
+[systems.dos]
+extensions = ["conf", "exe", "com", "bat"]
+primary = "retroarch-dosbox-pure"
+fallbacks = ["dosbox-staging"]
+
+[systems.windows]
+extensions = ["exe", "msi"]
+primary = "wine-ge"
+
+[systems.movie]
+extensions = ["mp4", "mkv", "avi", "mov", "m4v", "webm", "mpg", "mpeg", "ts", "m2ts"]
+primary = "mpv"
+
+[systems.music]
+extensions = ["mp3", "wav", "flac", "ogg", "opus", "m4a", "aac"]
+primary = "mpv"
+
+[runners.retroarch-beetle-pce]
+kind = "retroarch"
+executable = "/usr/bin/retroarch"
+arguments = ["-L", "/usr/lib/libretro/mednafen_pce_libretro.so", "{content}"]
+package = "libretro-beetle-pce"
+
+[runners.retroarch-kronos]
+kind = "retroarch"
+executable = "/usr/bin/retroarch"
+arguments = ["-L", "/usr/lib/libretro/kronos_libretro.so", "{content}"]
+package = "libretro-kronos"
+
+[runners.retroarch-flycast]
+kind = "retroarch"
+executable = "/usr/bin/retroarch"
+arguments = ["-L", "/usr/lib/libretro/flycast_libretro.so", "{content}"]
+package = "libretro-flycast"
+
+[runners.retroarch-puae]
+kind = "retroarch"
+executable = "/usr/bin/retroarch"
+arguments = ["-L", "/usr/lib/libretro/puae_libretro.so", "{content}"]
+package = "pulsearc-libretro-puae"
+
+[runners.retroarch-stella]
+kind = "retroarch"
+executable = "/usr/bin/retroarch"
+arguments = ["-L", "/usr/lib/libretro/stella_libretro.so", "{content}"]
+package = "pulsearc-libretro-stella2014"
+
+[runners.retroarch-prosystem]
+kind = "retroarch"
+executable = "/usr/bin/retroarch"
+arguments = ["-L", "/usr/lib/libretro/prosystem_libretro.so", "{content}"]
+package = "pulsearc-libretro-prosystem"
+
+[runners.retroarch-handy]
+kind = "retroarch"
+executable = "/usr/bin/retroarch"
+arguments = ["-L", "/usr/lib/libretro/handy_libretro.so", "{content}"]
+package = "pulsearc-libretro-handy"
+
+[runners.retroarch-virtualjaguar]
+kind = "retroarch"
+executable = "/usr/bin/retroarch"
+arguments = ["-L", "/usr/lib/libretro/virtualjaguar_libretro.so", "{content}"]
+package = "pulsearc-libretro-virtualjaguar"
+
+[runners.retroarch-dosbox-pure]
+kind = "retroarch"
+executable = "/usr/bin/retroarch"
+arguments = ["-L", "/usr/lib/libretro/dosbox_pure_libretro.so", "{content}"]
+package = "pulsearc-libretro-dosbox-pure"
+
+[runners.retroarch-vice-x64sc]
+kind = "retroarch"
+executable = "/usr/bin/retroarch"
+arguments = ["-L", "/usr/lib/libretro/vice_x64sc_libretro.so", "{content}"]
+package = "pulsearc-libretro-vice-x64sc"
+
+[runners.retroarch-beetle-saturn]
+kind = "retroarch"
+executable = "/usr/bin/retroarch"
+arguments = ["-L", "/usr/lib/libretro/mednafen_saturn_libretro.so", "{content}"]
+package = "pulsearc-libretro-beetle-saturn"
+
+[systems.pc-engine]
+extensions = ["pce", "sgx", "cue", "chd"]
+primary = "retroarch-beetle-pce"
+bios = ["syscard3.pce for CD games"]
+
+[systems.sega-cd]
+extensions = ["cue", "chd"]
+primary = "retroarch-genesis-plus-gx"
+bios = ["bios_CD_U.bin, bios_CD_E.bin, or bios_CD_J.bin"]
+
+[systems.sega-saturn]
+extensions = ["cue", "chd"]
+primary = "retroarch-kronos"
+fallbacks = ["retroarch-beetle-saturn"]
+bios = ["sega_101.bin or mpr-17933.bin"]
+
+[systems.amiga]
+extensions = ["adf", "adz", "hdf", "lha"]
+primary = "retroarch-puae"
+bios = ["Kickstart firmware appropriate to the model"]
+
+[systems.atari-2600]
+extensions = ["a26"]
+primary = "retroarch-stella"
+
+[systems.atari-7800]
+extensions = ["a78"]
+primary = "retroarch-prosystem"
+
+[systems.atari-lynx]
+extensions = ["lnx"]
+primary = "retroarch-handy"
+
+[systems.atari-jaguar]
+extensions = ["j64", "jag"]
+primary = "retroarch-virtualjaguar"

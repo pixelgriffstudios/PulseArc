@@ -1,0 +1,6 @@
+#!/usr/bin/env sh
+set -eu
+
+root="$HOME/.local/share/pulsearc/runners/projectm/root"
+export LD_LIBRARY_PATH="$root/usr/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+exec "$root/usr/bin/xdotool" "$@"

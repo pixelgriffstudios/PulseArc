@@ -1,0 +1,15 @@
+base
+linux
+linux-firmware
+amd-ucode
+intel-ucode
+systemd
+dialog
+util-linux
+coreutils
+gptfdisk
+parted
+btrfs-progs
+dosfstools
+zstd
+

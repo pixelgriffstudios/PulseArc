@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Keep Steam's account, owned-library metadata, installed games, controller
+# layouts, and Proton prefixes on persistent storage. A local bootstrap is
+# supported so an installed PulseArc machine can gain Steam without an OS
+# reinstall.
+state_root="${XDG_DATA_HOME:-$HOME/.local/share}/Steam"
+games_root="${PULSEARC_STEAM_LIBRARY:-$HOME/Games/SteamLibrary}"
+log_root="${XDG_CACHE_HOME:-$HOME/.cache}/pulsearc/logs"
+local_root="$HOME/.local/share/pulsearc/apps/steam"
+local_launcher="$local_root/steam.sh"
+
+install -d -m 0755 "$state_root" "$games_root" "$log_root"
+export STEAM_RUNTIME=1
+export STEAM_COMPAT_CLIENT_INSTALL_PATH="$state_root"
+
+if command -v steam >/dev/null 2>&1; then
+    launcher=$(command -v steam)
+elif [[ -x "$local_launcher" ]]; then
+    launcher=$local_launcher
+elif [[ -x "$local_root/bin_steam.sh" ]]; then
+    launcher="$local_root/bin_steam.sh"
+else
+    printf 'Steam is not installed.\n' >&2
+    exit 127
+fi
+
+exec >>"$log_root/steam.log" 2>&1
+exec "$launcher" -gamepadui "$@"

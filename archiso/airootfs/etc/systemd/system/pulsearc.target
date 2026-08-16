@@ -1,0 +1,5 @@
+[Unit]
+Description=PulseArc controller-first gaming session
+Wants=NetworkManager.service bluetooth.service systemd-udevd.service sshd.service udisks2.service
+After=NetworkManager.service bluetooth.service systemd-udevd.service sshd.service udisks2.service
+AllowIsolate=yes

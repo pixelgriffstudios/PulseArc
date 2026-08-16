@@ -1,0 +1,24 @@
+[
+  {
+    "content_id": "preview-nes",
+    "title": "Sample NES Game",
+    "platform": "nes",
+    "runner": "retroarch:mesen",
+    "media_kind": "rom",
+    "path": "/media/sample/game.nes",
+    "source_root": "/media/sample",
+    "read_only": true,
+    "cover_state": "pending"
+  },
+  {
+    "content_id": "preview-windows",
+    "title": "Portable Windows Game",
+    "platform": "windows",
+    "runner": "wine-ge",
+    "media_kind": "windows-program",
+    "path": "/media/sample/game.exe",
+    "source_root": "/media/sample",
+    "read_only": true,
+    "cover_state": "pending"
+  }
+]

@@ -1,0 +1,204 @@
+{
+  "models": {
+    "passenger-cars": {
+      "compact": {
+        "file": "compact.obj",
+        "triangles": 7257,
+        "scale": 0.001188084629522986,
+        "source_meshes": [
+          "Wheel_C003",
+          "Compact Body",
+          "Compact Body",
+          "Compact Body"
+        ]
+      },
+      "coupe": {
+        "file": "coupe.obj",
+        "triangles": 6022,
+        "scale": 0.0008669113320719095,
+        "source_meshes": [
+          "Coupe Body",
+          "Coupe Body",
+          "Coupe Body",
+          "Wheel_F"
+        ]
+      },
+      "hatchback": {
+        "file": "hatchback.obj",
+        "triangles": 6808,
+        "scale": 0.000985569750821093,
+        "source_meshes": [
+          "Hatchback Body",
+          "Hatchback Body",
+          "Hatchback Body",
+          "Wheel_B003"
+        ]
+      },
+      "minivan": {
+        "file": "minivan.obj",
+        "triangles": 7450,
+        "scale": 0.0007887961042671062,
+        "source_meshes": [
+          "Wheel_D003",
+          "minivan body",
+          "minivan body",
+          "minivan body"
+        ]
+      },
+      "offroad": {
+        "file": "offroad.obj",
+        "triangles": 6502,
+        "scale": 0.000918285816897955,
+        "source_meshes": [
+          "Wheel_G002",
+          "Offroad Body",
+          "Offroad Body",
+          "Offroad Body"
+        ]
+      },
+      "pickup": {
+        "file": "pickup.obj",
+        "triangles": 6918,
+        "scale": 0.0007033837189889562,
+        "source_meshes": [
+          "Wheel_E003",
+          "Pickup Body",
+          "Pickup Body",
+          "Pickup Body"
+        ]
+      },
+      "sedan": {
+        "file": "sedan.obj",
+        "triangles": 7122,
+        "scale": 0.0008358586215539795,
+        "source_meshes": [
+          "Sedan Body",
+          "Sedan Body",
+          "Sedan Body",
+          "Wheel_A003"
+        ]
+      },
+      "sport": {
+        "file": "sport.obj",
+        "triangles": 6268,
+        "scale": 0.0009606147714884758,
+        "source_meshes": [
+          "Wheel_H003",
+          "Sport body",
+          "Sport body",
+          "Sport body"
+        ]
+      },
+      "suv": {
+        "file": "suv.obj",
+        "triangles": 7951,
+        "scale": 0.0007833641107509372,
+        "source_meshes": [
+          "Wheel_E003",
+          "Wheel_E003",
+          "SUV Body",
+          "SUV Body"
+        ]
+      },
+      "wagon": {
+        "file": "wagon.obj",
+        "triangles": 6982,
+        "scale": 0.0008916229197889785,
+        "source_meshes": [
+          "Wagon Body",
+          "Wagon Body",
+          "Wagon Body",
+          "Wheel_A003"
+        ]
+      }
+    },
+    "retro-office": {
+      "retro-pc-cream": {
+        "file": "retro-pc-cream.obj",
+        "triangles": 1514,
+        "scale": 1.910711985190641,
+        "source_meshes": [
+          "KeyBoard_002",
+          "Monitor_002-0",
+          "Monitor_002-1",
+          "Mouse_001",
+          "PC_004-0"
+        ]
+      },
+      "retro-pc-black": {
+        "file": "retro-pc-black.obj",
+        "triangles": 1940,
+        "scale": 0.17318122765013394,
+        "source_meshes": [
+          "KeyBoard_002.002",
+          "Monitor_002.003-0",
+          "Monitor_002.003-1",
+          "Mouse_001.001",
+          "PC_004.006-0"
+        ]
+      },
+      "retro-pc-white": {
+        "file": "retro-pc-white.obj",
+        "triangles": 1816,
+        "scale": 0.22880384737914752,
+        "source_meshes": [
+          "Cube.049-0",
+          "Cube.049-1",
+          "PC.002-0",
+          "KeyBoard_002.001",
+          "Mouse_001.003"
+        ]
+      },
+      "office-chair": {
+        "file": "office-chair.obj",
+        "triangles": 6000,
+        "scale": 0.22122027355738655,
+        "source_meshes": [
+          "Chair.006-0",
+          "Chair.006-1",
+          "Chair.006-2"
+        ]
+      },
+      "water-cooler": {
+        "file": "water-cooler.obj",
+        "triangles": 888,
+        "scale": 0.283632985123453,
+        "source_meshes": [
+          "Cooler.001"
+        ]
+      }
+    },
+    "dvd-case": {
+      "case": {
+        "file": "case.obj",
+        "triangles": 451,
+        "scale": 0.0195115998714358,
+        "source_meshes": [
+          "Cube",
+          "Plane.003"
+        ]
+      }
+    }
+  },
+  "sources": {
+    "passenger-cars": {
+      "title": "Generic passenger car pack",
+      "author": "Comrade1280",
+      "license": "CC BY 4.0",
+      "url": "https://sketchfab.com/3d-models/generic-passenger-car-pack-20f9af9b8a404d5cb022ac6fe87f21f5"
+    },
+    "retro-office": {
+      "title": "90s Retro Office Pack",
+      "author": "MadeByYeshe",
+      "license": "CC BY 4.0",
+      "url": "https://sketchfab.com/3d-models/90s-retro-office-pack-dadca97505214b9481d35e22c48e18df"
+    },
+    "dvd-case": {
+      "title": "DVD/Game Case",
+      "author": "Raphael Frei",
+      "license": "CC BY 4.0",
+      "url": "https://sketchfab.com/3d-models/dvdgame-case-d5c542e24bee490fbdf130413983f124",
+      "note": "Disc geometry is intentionally excluded."
+    }
+  }
+}

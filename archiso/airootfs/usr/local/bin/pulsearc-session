@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
+export PULSEARC_STATE_ROOT=/var/lib/pulsearc
+export PYTHONPATH=/usr/lib/pulsearc/core
+session_log="$PULSEARC_STATE_ROOT/session.log"
+: > "$session_log"
+exec >> "$session_log" 2>&1
+python -m pulsearc.hardware || true
+openbox --config-file /etc/xdg/openbox/rc.xml &
+/usr/local/bin/pulsearc-audio-select || true
+while true; do
+    set +e
+    /usr/bin/python /usr/share/pulsearc/native-ui/pulsearc_ui.py
+    status=$?
+    set -e
+    [[ $status -eq 75 ]] || exit "$status"
+done

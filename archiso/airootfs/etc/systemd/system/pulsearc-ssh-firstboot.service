@@ -1,0 +1,12 @@
+[Unit]
+Description=Create PulseArc development SSH pairing credential
+Before=sshd.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/pulsearc-ssh-firstboot
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
+

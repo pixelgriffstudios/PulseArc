@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+set -euo pipefail
+root=/usr/lib/pulsearc/runners/dosbox-staging
+binary=$(find "$root" -type f -name dosbox -perm -u+x -print -quit)
+[[ -n "$binary" ]] || { printf 'Missing internal DOSBox Staging runtime\n' >&2; exit 127; }
+exec "$binary" "$@"

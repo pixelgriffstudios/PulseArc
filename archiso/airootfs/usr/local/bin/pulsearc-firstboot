@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+echo "PulseArc OS Milestone 0"
+echo "The bootable controller frontend is implemented in Milestone 1."
+exec /bin/bash
+

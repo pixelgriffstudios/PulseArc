@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pulsearc-core"
+version = "0.0.1"
+description = "Media detection and launch planning for PulseArc OS"
+requires-python = ">=3.11"
+license = { text = "GPL-3.0-or-later" }
+
+[project.scripts]
+pulsearc-probe = "pulsearc.cli:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+

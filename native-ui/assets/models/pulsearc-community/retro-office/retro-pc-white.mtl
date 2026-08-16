@@ -1,0 +1,15 @@
+newmtl monitor-plastic-41
+Kd 0.160000 0.180000 0.220000
+
+newmtl monitor-glass-42
+Kd 0.055000 0.105000 0.160000
+
+newmtl pc.001-43
+Kd 0.950000 0.950000 0.950000
+
+newmtl keyboard-black-44
+Kd 0.035000 0.040000 0.050000
+
+newmtl mouse-black-45
+Kd 0.035000 0.040000 0.050000
+

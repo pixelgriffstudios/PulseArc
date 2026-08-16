@@ -1,0 +1,83 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Kodi is used only as PulseArc's DVD-navigation engine. Its regular home
+# screen is never an entry point.  Prefer the private, signature-verified Arch
+# runtime so this works on an installed console without modifying the base OS.
+runtime_root="$HOME/.local/opt/kodi"
+if [[ -x "$runtime_root/usr/lib/kodi/kodi.bin" ]]; then
+    kodi_bin="$runtime_root/usr/lib/kodi/kodi.bin"
+    export LD_LIBRARY_PATH="$runtime_root/usr/lib:$runtime_root/usr/lib/samba:$runtime_root/usr/lib/kodi:${LD_LIBRARY_PATH:-}"
+    export PYTHONPATH="$runtime_root/usr/lib/python3.14/site-packages:${PYTHONPATH:-}"
+    export KODI_HOME="$runtime_root/usr/share/kodi"
+elif [[ -x /usr/bin/kodi ]]; then
+    kodi_bin="/usr/bin/kodi"
+else
+    echo "PulseArc DVD engine is not installed" >&2
+    exit 127
+fi
+
+export KODI_DATA="${KODI_DATA:-$HOME/.local/share/pulsearc/kodi-dvd}"
+mkdir -p "$KODI_DATA/userdata/keymaps"
+
+# Region-code-enhanced Region 1 discs reject a region-free player even when
+# ordinary Region 1 DVDs work. Pin this isolated DVD-only profile to Region 1
+# and always enter the authored disc menu.
+python - "$KODI_DATA/userdata/guisettings.xml" <<'PY'
+import sys
+import xml.etree.ElementTree as ET
+from pathlib import Path
+
+path = Path(sys.argv[1])
+try:
+    tree = ET.parse(path)
+    root = tree.getroot()
+except (OSError, ET.ParseError):
+    root = ET.Element("settings", {"version": "2"})
+    tree = ET.ElementTree(root)
+for setting_id, value in (("dvds.playerregion", "1"), ("dvds.automenu", "true"),
+                          ("dvds.autorun", "true"),
+                          # Let Kodi use its higher-quality GL scalers for every
+                          # DVD upscale, including 480-line video on a 4K TV.
+                          ("videoplayer.hqscalers", "0"),
+                          # Preserve the authored aspect ratio.  This keeps
+                          # anamorphic/widescreen DVDs wide without stretching
+                          # 4:3 discs or cropping letterboxed material.
+                          ("videoplayer.stretch43", "0"),
+                          ("videoplayer.rendermethod", "0")):
+    node = root.find(f"./setting[@id='{setting_id}']")
+    if node is None:
+        node = ET.SubElement(root, "setting", {"id": setting_id})
+    node.set("default", "false")
+    node.text = value
+ET.indent(tree, space="    ")
+tree.write(path, encoding="unicode")
+PY
+
+cat >"$KODI_DATA/userdata/keymaps/pulsearc-dvd.xml" <<'XML'
+<keymap>
+  <FullscreenVideo>
+    <gamepad><B>Quit</B></gamepad>
+  </FullscreenVideo>
+  <VideoMenu>
+    <gamepad><A>Select</A><B>Quit</B></gamepad>
+  </VideoMenu>
+</keymap>
+XML
+
+child=""
+cleanup() {
+    if [[ -n "$child" ]] && kill -0 "$child" 2>/dev/null; then
+        kill -TERM "$child" 2>/dev/null || true
+        wait "$child" 2>/dev/null || true
+    fi
+}
+trap cleanup EXIT INT TERM HUP
+
+# Supplying the DVD URI at process start avoids exposing Kodi Home while the
+# disc is detected. Kodi remains only PulseArc's fullscreen DVD/menu engine.
+"$kodi_bin" --standalone --fullscreen "dvd://1" >/tmp/pulsearc-kodi-dvd.log 2>&1 &
+child=$!
+
+wait "$child"
+child=""

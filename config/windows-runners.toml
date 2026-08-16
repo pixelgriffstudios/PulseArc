@@ -1,0 +1,24 @@
+[runner.wine-ge]
+executable = "/usr/lib/pulsearc/runners/wine-ge/bin/wine"
+supports = ["auto", "vulkan", "opengl", "wined3d"]
+
+[renderer.auto]
+vulkan_d3d8_11 = "dxvk"
+vulkan_d3d12 = "vkd3d-proton"
+fallback = "wined3d"
+
+[renderer.vulkan]
+require_vulkan = true
+dxvk = true
+vkd3d_proton = true
+
+[renderer.opengl]
+dxvk = false
+vkd3d_proton = false
+wined3d = true
+
+[renderer.wined3d]
+dxvk = false
+vkd3d_proton = false
+wined3d = true
+

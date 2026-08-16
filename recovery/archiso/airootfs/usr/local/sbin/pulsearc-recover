@@ -1,0 +1,138 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+payload_root=/run/archiso/bootmnt/pulsearc-recovery
+payload_device="$(blkid -L PULSEARC_PAYLOAD 2>/dev/null || true)"
+log=/var/log/pulsearc-recovery.log
+exec > >(tee -a "$log") 2>&1
+
+fail() {
+    local message=$1
+    dialog --title 'PulseArc recovery failed' --msgbox \
+        "$message\n\nNo successful installation was recorded.\n\nLog: $log" 14 74 || true
+    systemctl poweroff
+    exit 1
+}
+
+trap 'fail "The recovery operation stopped unexpectedly at line $LINENO."' ERR
+
+payload_files_present() {
+    [[ -r "$1/pulsearc-disk.img.zst" && \
+       -r "$1/pulsearc-disk.img.zst.sha256" && \
+       -r "$1/pulsearc-disk.img.size" ]]
+}
+
+# A flashed USB exposes the golden disk through a dedicated filesystem.  The
+# ISO-root fallback is retained for optical and VM diagnostics, but is never
+# relied on by the real USB recovery path.
+if ! payload_files_present "$payload_root"; then
+    [[ -b "$payload_device" ]] || \
+        fail 'The verified PulseArc disk payload partition is missing from this USB image.'
+    payload_root=/run/pulsearc-payload
+    install -d -m 0755 "$payload_root"
+    mount -o ro,nosuid,nodev,noexec "$payload_device" "$payload_root"
+fi
+
+payload="$payload_root/pulsearc-disk.img.zst"
+payload_sha="$payload_root/pulsearc-disk.img.zst.sha256"
+payload_size_file="$payload_root/pulsearc-disk.img.size"
+payload_files_present "$payload_root" || \
+    fail 'The PulseArc payload partition is present but incomplete.'
+
+required_bytes="$(<"$payload_size_file")"
+
+parent_disk() {
+    local source resolved type parent
+    source=$1
+    [[ -n "$source" ]] || return 0
+    resolved="$(readlink -f -- "$source" 2>/dev/null || true)"
+    [[ -b "$resolved" ]] || return 0
+    type="$(lsblk -dnro TYPE "$resolved" 2>/dev/null || true)"
+    if [[ "$type" == disk ]]; then
+        printf '%s\n' "$resolved"
+        return 0
+    fi
+    parent="$(lsblk -dnro PKNAME "$resolved" 2>/dev/null || true)"
+    [[ -n "$parent" ]] && printf '/dev/%s\n' "$parent"
+}
+
+# Identify the recovery medium two independent ways: from ArchISO's mounted
+# boot source and from the dedicated payload partition.  Label scanning below
+# is a third guard for firmware/USB layouts where either source is a symlink,
+# loop device, or otherwise has no directly reported parent.
+boot_source="$(findmnt -nro SOURCE /run/archiso/bootmnt 2>/dev/null || true)"
+boot_disk="$(parent_disk "$boot_source")"
+payload_disk="$(parent_disk "$payload_device")"
+
+mapfile -t disks < <(
+    lsblk -bdpno NAME,SIZE,MODEL,TYPE | awk '$NF == "disk" {print}' |
+        while read -r name size rest; do
+            [[ "$name" == "$boot_disk" ]] && continue
+            [[ "$name" == "$payload_disk" ]] && continue
+            if lsblk -nrpo LABEL "$name" 2>/dev/null |
+                grep -Eq '^(PULSEARC_RECOVERY|PULSEARC_PAYLOAD)$'; then
+                continue
+            fi
+            (( size >= required_bytes )) || continue
+            printf '%s|%s\n' "$name" "$(lsblk -dnpo SIZE,MODEL "$name" | sed 's/[[:space:]]\+/ /g')"
+        done
+)
+((${#disks[@]})) || fail 'No internal disk large enough for PulseArc was found.'
+
+menu=()
+for item in "${disks[@]}"; do
+    menu+=("${item%%|*}" "${item#*|}")
+done
+
+disk="$(dialog --stdout --title 'PulseArc SSD Recovery' --menu \
+    'Choose the INTERNAL SSD. The recovery USB is excluded automatically.' \
+    20 78 10 "${menu[@]}")" || systemctl poweroff
+[[ -b "$disk" && "$disk" != "$boot_disk" ]] || fail 'Unsafe destination selection was rejected.'
+
+summary="$(lsblk -dnpo NAME,SIZE,MODEL "$disk" | sed 's/[[:space:]]\+/ /g')"
+if ! dialog --defaultno --yes-label 'Erase and Restore' --no-label 'Cancel' \
+    --title 'FINAL CONFIRMATION' \
+    --yesno "Write the verified PulseArc OS directly to this disk?\n\n$summary\n\nEverything currently on it will be erased." 14 76; then
+    systemctl poweroff
+fi
+
+dialog --infobox 'Verifying the embedded PulseArc disk image...' 5 60
+(cd "$(dirname "$payload")" && sha256sum -c "$(basename "$payload_sha")") || \
+    fail 'The embedded disk image failed its checksum. Reflash the USB.'
+
+wipefs --all --force "$disk"
+set +e
+(
+    set -o pipefail
+    zstd -T0 -dc "$payload" |
+        dd of="$disk" bs=16M iflag=fullblock oflag=direct conv=fsync status=progress
+) 2>&1 | dialog --title 'Restoring PulseArc to the SSD' --programbox 20 78
+write_status=${PIPESTATUS[0]}
+set -e
+(( write_status == 0 )) || fail 'Writing the preinstalled disk image failed.'
+
+sync
+blockdev --rereadpt "$disk" || true
+partprobe "$disk" || true
+udevadm settle
+
+root_part="${disk}3"
+[[ "$disk" =~ (nvme|mmcblk|loop) ]] && root_part="${disk}p3"
+[[ -b "$root_part" ]] || fail 'The restored root partition was not detected.'
+
+sgdisk -e "$disk"
+parted --script "$disk" resizepart 3 100%
+partprobe "$disk" || true
+udevadm settle
+
+mkdir -p /mnt/pulsearc-restored
+mount -o subvol=@,compress=zstd:3,noatime "$root_part" /mnt/pulsearc-restored
+btrfs filesystem resize max /mnt/pulsearc-restored
+touch /mnt/pulsearc-restored/var/lib/pulsearc/.root-expanded
+sync
+umount /mnt/pulsearc-restored
+
+sgdisk -v "$disk" || fail 'The restored GPT partition table did not validate.'
+dialog --title 'PulseArc recovery complete' --msgbox \
+    'PulseArc is fully installed on the internal SSD. The PC will now shut down. Remove the recovery USB only after power is off, then turn the PC on.' 12 74
+systemctl poweroff

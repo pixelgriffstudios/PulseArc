@@ -1,0 +1,97 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
+export PULSEARC_STATE_ROOT=/var/lib/pulsearc
+user_core="$HOME/.local/share/pulsearc/core"
+if [[ -d "$user_core/pulsearc" ]]; then
+    export PYTHONPATH="$user_core:/usr/lib/pulsearc/core"
+else
+    export PYTHONPATH=/usr/lib/pulsearc/core
+fi
+session_log="$PULSEARC_STATE_ROOT/session.log"
+: > "$session_log"
+exec >> "$session_log" 2>&1
+python -m pulsearc.hardware || true
+openbox --config-file /etc/xdg/openbox/rc.xml &
+"$HOME/.local/bin/pulsearc-audio-select" || true
+# The original development image's media daemon skips its first rebuild when
+# no removable drive is present. Seed the internal index before the shell
+# starts; the daemon will merge removable media when a device is inserted.
+for _attempt in {1..20}; do
+    [[ -d /run/pulsearc ]] && break
+    sleep 0.1
+done
+python -c 'from pulsearc.scanner import scan,write_index; write_index(scan("/var/lib/pulsearc/library"), "/run/pulsearc/library.json")' || true
+if [[ -f "$user_core/pulsearc/metadata_daemon.py" ]]; then
+    install -d -m 0755 "$HOME/.cache/pulsearc"
+    metadata_pid="$HOME/.cache/pulsearc/metadata.pid"
+    if [[ -s "$metadata_pid" ]]; then
+        old_pid="$(cat "$metadata_pid" 2>/dev/null || true)"
+        [[ "$old_pid" =~ ^[0-9]+$ ]] && kill "$old_pid" 2>/dev/null || true
+    fi
+    PULSEARC_COVERS_PATH="$HOME/.cache/pulsearc/covers.json" \
+    PULSEARC_SYNOPSIS_PATH="$HOME/.cache/pulsearc/synopses.json" \
+    PULSEARC_OFFLINE_ARTWORK="$HOME/.local/share/pulsearc/artwork/offline" \
+        python -m pulsearc.metadata_daemon >/tmp/pulsearc-user-metadata.log 2>&1 &
+    echo $! > "$metadata_pid"
+fi
+play_theme_boot() {
+local theme_boot
+theme_boot="$({ python - <<'PY'
+import json
+import tomllib
+from pathlib import Path
+
+profiles = Path('/var/lib/pulsearc/profiles')
+try:
+    profile_id = (profiles / 'active-profile').read_text(encoding='utf-8').strip() or 'default'
+except OSError:
+    profile_id = 'default'
+settings_paths = [profiles / profile_id / 'settings.json']
+if profile_id == 'default':
+    settings_paths.append(Path('/var/lib/pulsearc/settings.json'))
+theme_id = 'pulsearc-classic'
+for path in settings_paths:
+    try:
+        document = json.loads(path.read_text(encoding='utf-8'))
+    except (OSError, ValueError):
+        continue
+    theme_id = str(document.get('theme') or theme_id)
+    break
+roots = (
+    Path.home() / '.local/share/pulsearc/themes',
+    Path.home() / '.local/share/pulsearc/native-ui/themes',
+)
+for root in roots:
+    manifest = root / theme_id / 'theme.toml'
+    try:
+        with manifest.open('rb') as source:
+            document = tomllib.load(source)
+        relative = str(document.get('boot_animation') or '').strip()
+        candidate = (manifest.parent / relative).resolve()
+        candidate.relative_to(manifest.parent.resolve())
+        if relative and candidate.is_file() and candidate.suffix.casefold() in {'.mp4', '.webm'}:
+            print(candidate)
+            break
+    except (OSError, ValueError, tomllib.TOMLDecodeError):
+        continue
+PY
+} 2>/dev/null || true)"
+if [[ -n "$theme_boot" ]] && command -v mpv >/dev/null 2>&1; then
+    timeout 35s mpv --fs --really-quiet --no-terminal --no-input-default-bindings \
+        --keep-open=no "$theme_boot" || true
+    export PULSEARC_EXTERNAL_BOOT=1
+else
+    unset PULSEARC_EXTERNAL_BOOT || true
+fi
+}
+while true; do
+    play_theme_boot
+    set +e
+    "$HOME/.local/share/pulsearc/venv/bin/python" \
+        "$HOME/.local/share/pulsearc/native-ui/pulsearc_ui.py"
+    status=$?
+    set -e
+    [[ $status -eq 75 ]] || exit "$status"
+done

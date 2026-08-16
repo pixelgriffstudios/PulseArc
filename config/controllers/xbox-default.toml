@@ -1,0 +1,28 @@
+id = "xbox-default"
+name = "Xbox-style universal layout"
+
+[buttons]
+south = "a"
+east = "b"
+west = "x"
+north = "y"
+left_shoulder = "lb"
+right_shoulder = "rb"
+left_trigger = "lt"
+right_trigger = "rt"
+select = "view"
+start = "menu"
+guide = "guide"
+
+[axes]
+left_x = "left_x"
+left_y = "left_y"
+right_x = "right_x"
+right_y = "right_y"
+
+[hotkeys]
+exit_game = ["select", "start"]
+emulator_menu = ["select", "south"]
+save_state = ["select", "right_shoulder"]
+load_state = ["select", "left_shoulder"]
+

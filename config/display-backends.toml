@@ -1,0 +1,30 @@
+[policy]
+# Always probe the installed driver. Never infer compatibility only from the
+# CPU/GPU name, and never make Gamescope a boot requirement.
+frontend_default = "x11-opengl"
+gamescope = "optional"
+
+[backend.gamescope]
+requires_vulkan = "1.3"
+requires_self_test = true
+fallback = "x11"
+
+[backend.x11]
+server = "Xorg"
+window_manager = "openbox"
+frontend_renderer = "opengl"
+
+[windows.modern]
+minimum_vulkan = "1.3"
+d3d8_11 = "dxvk-modern"
+d3d12 = "vkd3d-proton"
+
+[windows.legacy-vulkan]
+minimum_vulkan = "1.1"
+d3d8_11 = "dxvk-legacy-1.10.3"
+d3d12 = "unsupported"
+
+[windows.opengl-fallback]
+d3d8_11 = "wined3d"
+d3d12 = "unsupported"
+

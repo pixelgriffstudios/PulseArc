@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+state_dir=/var/lib/pulsearc
+credential_file="$state_dir/firstboot-ssh.txt"
+install -d -m 0700 "$state_dir"
+if [[ ! -e "$credential_file" ]]; then
+    password="$(openssl rand -base64 18 | tr -d '/+=' | head -c 16)"
+    printf 'gamer:%s\n' "$password" | chpasswd
+    {
+        printf 'PulseArc development SSH access\n'
+        printf 'User: gamer\n'
+        printf 'Password: %s\n' "$password"
+        printf 'Change this password after connecting with: passwd\n'
+    } > "$credential_file"
+    chown root:gamer "$credential_file"
+    chmod 0640 "$credential_file"
+fi
+cat "$credential_file"

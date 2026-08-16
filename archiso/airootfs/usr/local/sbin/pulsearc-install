@@ -1,0 +1,152 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+target=/mnt/pulsearc-target
+log=/var/log/pulsearc-installer.log
+exec > >(tee -a "$log") 2>&1
+
+cleanup() {
+    if mountpoint -q "$target"; then
+        umount -R "$target" || true
+    fi
+}
+trap cleanup EXIT
+
+die() {
+    printf 'INSTALLATION STOPPED: %s\n' "$*" >&2
+    exit 1
+}
+
+partition_path() {
+    local disk=$1 number=$2
+    if [[ "$disk" =~ (nvme|mmcblk|loop) ]]; then
+        printf '%sp%s' "$disk" "$number"
+    else
+        printf '%s%s' "$disk" "$number"
+    fi
+}
+
+[[ ${EUID:-999} -eq 0 ]] || die "run this installer as root"
+boot_source="$(findmnt -nro SOURCE /run/archiso/bootmnt 2>/dev/null || true)"
+boot_disk=""
+if [[ -n "$boot_source" ]]; then
+    boot_disk="$(lsblk -ndo PKNAME "$boot_source" 2>/dev/null || true)"
+    [[ -z "$boot_disk" ]] || boot_disk="/dev/$boot_disk"
+fi
+
+mapfile -t disks < <(
+    lsblk -dpno NAME,SIZE,MODEL,TYPE | awk '$NF == "disk" {print}' |
+        while read -r name size rest; do
+            [[ "$name" == "$boot_disk" ]] && continue
+            bytes="$(blockdev --getsize64 "$name" 2>/dev/null || printf 0)"
+            (( bytes >= 16000000000 )) || continue
+            printf '%s|%s %s\n' "$name" "$size" "$rest"
+        done
+)
+((${#disks[@]})) || die "no unambiguous 16 GB or larger destination disk was found"
+
+menu=()
+for item in "${disks[@]}"; do
+    menu+=("${item%%|*}" "${item#*|}")
+done
+disk="$(dialog --stdout --title 'PulseArc OS Installer' --menu \
+    'Choose the INTERNAL destination. Everything on it will be erased.' 20 78 10 "${menu[@]}")" || exit 1
+[[ -b "$disk" ]] || die "the selected destination is not a block device"
+[[ "$disk" != "$boot_disk" ]] || die "refusing to erase the boot media"
+mounted="$(lsblk -nrpo MOUNTPOINT "$disk" | awk 'NF' || true)"
+[[ -z "$mounted" ]] || die "destination has mounted filesystems; unmount them before installing"
+
+disk_summary="$(lsblk -dnpo NAME,SIZE,MODEL "$disk" | sed 's/[[:space:]]\+/ /g')"
+if ! dialog --defaultno \
+    --yes-label 'Erase and Install' \
+    --no-label 'Cancel' \
+    --title 'FINAL DESTRUCTIVE CONFIRMATION' \
+    --yesno "Erase the selected internal drive and install PulseArc?\n\n$disk_summary\n\nAll existing data on this drive will be permanently erased." 14 76; then
+    exit 0
+fi
+
+dialog --infobox "Partitioning $disk..." 5 50
+wipefs --all "$disk"
+parted --script "$disk" -- \
+    mklabel gpt \
+    mkpart bios_grub 1MiB 3MiB \
+    set 1 bios_grub on \
+    mkpart ESP fat32 3MiB 1027MiB \
+    set 2 esp on \
+    mkpart pulsearc btrfs 1027MiB 100%
+udevadm settle
+
+bios_part="$(partition_path "$disk" 1)"
+efi_part="$(partition_path "$disk" 2)"
+root_part="$(partition_path "$disk" 3)"
+[[ -b "$efi_part" && -b "$root_part" ]] || die "new partitions did not appear"
+mkfs.fat -F 32 -n PARC_EFI "$efi_part"
+mkfs.btrfs -f -L PULSEARC "$root_part"
+
+mkdir -p "$target"
+mount "$root_part" "$target"
+for subvolume in @ @home @state @snapshots; do
+    btrfs subvolume create "$target/$subvolume"
+done
+umount "$target"
+mount -o subvol=@,compress=zstd:3,noatime "$root_part" "$target"
+mkdir -p "$target/home" "$target/var/lib/pulsearc" "$target/.snapshots" "$target/boot/efi"
+mount -o subvol=@home,compress=zstd:3,noatime "$root_part" "$target/home"
+mount -o subvol=@state,compress=zstd:3,noatime "$root_part" "$target/var/lib/pulsearc"
+mount -o subvol=@snapshots,compress=zstd:3,noatime "$root_part" "$target/.snapshots"
+mount "$efi_part" "$target/boot/efi"
+
+dialog --infobox 'Copying the offline operating system...' 5 54
+rsync -aHAX --numeric-ids \
+    --exclude=/dev/* --exclude=/proc/* --exclude=/sys/* --exclude=/run/* \
+    --exclude=/tmp/* --exclude=/mnt/* --exclude=/var/log/* \
+    / "$target/"
+
+printf 'pulsearc\n' > "$target/etc/hostname"
+printf 'PulseArc OS\n' > "$target/etc/motd"
+
+genfstab -U "$target" > "$target/etc/fstab"
+touch "$target/etc/pulsearc/installed"
+rm -f "$target/etc/machine-id"
+: > "$target/etc/machine-id"
+rm -f "$target/etc/ssh/ssh_host_"*
+systemd-sysusers --root="$target"
+systemd-tmpfiles --root="$target" --create
+chown -R 1000:1000 "$target/home/gamer" "$target/var/lib/pulsearc"
+
+# ArchISO moves the kernel out of the live root and onto the ISO filesystem.
+# Restore it to /boot before generating the installed-system initramfs.
+kernel_source=/run/archiso/bootmnt/pulsearc/boot/x86_64/vmlinuz-linux
+[[ -r "$kernel_source" ]] || die "the installer kernel is missing from the boot media"
+install -Dm644 "$kernel_source" "$target/boot/vmlinuz-linux"
+
+# Replace ArchISO's live-media initramfs preset with a normal installed-system
+# preset.  Leaving the archiso hooks in place would make the installed kernel
+# search for the ISO filesystem instead of mounting the Btrfs root volume.
+rm -f "$target/etc/mkinitcpio.conf.d/archiso.conf"
+cat > "$target/etc/mkinitcpio.d/linux.preset" <<'EOF'
+ALL_config="/etc/mkinitcpio.conf"
+ALL_kver="/boot/vmlinuz-linux"
+PRESETS=('default' 'fallback')
+default_image="/boot/initramfs-linux.img"
+fallback_image="/boot/initramfs-linux-fallback.img"
+fallback_options="-S autodetect"
+EOF
+
+arch-chroot "$target" mkinitcpio -P
+arch-chroot "$target" grub-install --target=x86_64-efi --efi-directory=/boot/efi \
+    --bootloader-id=PulseArc --removable --no-nvram
+if ! arch-chroot "$target" grub-install --target=i386-pc "$disk"; then
+    printf 'Legacy BIOS GRUB installation failed; UEFI installation remains available.\n' >&2
+fi
+arch-chroot "$target" grub-mkconfig -o /boot/grub/grub.cfg
+systemctl --root="$target" enable NetworkManager.service bluetooth.service sshd.service \
+    pulsearc-ssh-firstboot.service pulsearc-media.service pulsearc-metadata.service \
+    pulsearc-expand-root.service
+
+sync
+umount -R "$target"
+dialog --title 'PulseArc OS' --msgbox \
+    'Installation completed successfully. PulseArc will shut down when you continue. After the PC turns off, remove the installer USB, then power the PC back on.' 11 72
+sync
+systemctl poweroff

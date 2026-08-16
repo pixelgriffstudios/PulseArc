@@ -1,0 +1,15 @@
+[Unit]
+Description=PulseArc removable-media mount and library service
+After=local-fs.target systemd-udevd.service
+Wants=systemd-udevd.service
+
+[Service]
+Type=simple
+Environment=PYTHONPATH=/usr/lib/pulsearc/core
+ExecStart=/usr/bin/python -m pulsearc.media_daemon
+Restart=on-failure
+RestartSec=2
+
+[Install]
+WantedBy=multi-user.target
+

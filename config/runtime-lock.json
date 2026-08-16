@@ -1,0 +1,181 @@
+{
+  "schema": 1,
+  "assets": [
+    {
+      "id": "duckstation",
+      "version": "latest",
+      "kind": "appimage",
+      "filename": "DuckStation-x64.AppImage",
+      "url": "https://github.com/stenzek/duckstation/releases/download/latest/DuckStation-x64.AppImage",
+      "sha256": "09a03eb4e5b1d03098c3616da86cea729bb60b533291b20d863b758fdbd756bd"
+    },
+    {
+      "id": "cemu",
+      "version": "2.6",
+      "kind": "appimage",
+      "filename": "Cemu-2.6-x86_64.AppImage",
+      "url": "https://github.com/cemu-project/Cemu/releases/download/v2.6/Cemu-2.6-x86_64.AppImage",
+      "sha256": "0c20c4aeb800bb13d9bab9474ef45a6f8fcde6402cad9b32ac2a1bbd03186313"
+    },
+    {
+      "id": "azahar",
+      "version": "2125.1.3",
+      "kind": "appimage",
+      "filename": "azahar.AppImage",
+      "url": "https://github.com/azahar-emu/azahar/releases/download/2125.1.3/azahar.AppImage",
+      "sha256": "906bc0c28c275d5c1cccd339f25ed6040bf0c106f8bec68aed638ebef6338a75"
+    },
+    {
+      "id": "vita3k",
+      "version": "continuous-2026-08-07",
+      "kind": "appimage",
+      "filename": "Vita3K-x86_64.AppImage",
+      "url": "https://github.com/Vita3K/Vita3K/releases/download/continuous/Vita3K-x86_64.AppImage",
+      "sha256": "17535421aa81e98b545a4263d97dc6f20bfa5c3a23afc502e557427ddd1866a5"
+    },
+    {
+      "id": "xemu",
+      "version": "0.8.136",
+      "kind": "appimage",
+      "filename": "xemu-0.8.136-x86_64.AppImage",
+      "url": "https://github.com/xemu-project/xemu/releases/download/v0.8.136/xemu-0.8.136-x86_64.AppImage",
+      "sha256": "ac77363a599109194ba2af3caa695348d199f515cf1d0fde091beb629e0c3103"
+    },
+    {
+      "id": "rpcs3",
+      "version": "0.0.42-19729-db907a25",
+      "kind": "appimage",
+      "filename": "rpcs3-v0.0.42-19729-db907a25_linux64.AppImage",
+      "url": "https://github.com/RPCS3/rpcs3-binaries-linux/releases/download/build-db907a258687a86fb30275765e8e7ca430567897/rpcs3-v0.0.42-19729-db907a25_linux64.AppImage",
+      "sha256": "1a821e9fd8275ceaa034c9dccdc4442cf3808bdb1168753a2275426da7d46fd5"
+    },
+    {
+      "id": "heroic",
+      "version": "2.22.1",
+      "kind": "appimage",
+      "filename": "Heroic-2.22.1-linux-x86_64.AppImage",
+      "url": "https://github.com/Heroic-Games-Launcher/HeroicGamesLauncher/releases/download/v2.22.1/Heroic-2.22.1-linux-x86_64.AppImage",
+      "sha256": "e91e3171c8cb8a57acfcfc7f665e8c74c5a80cf088d5ea61a2af5e6bcc537762"
+    },
+    {
+      "id": "wine-ge",
+      "version": "GE-Proton8-26",
+      "kind": "tar.xz",
+      "filename": "wine-lutris-GE-Proton8-26-x86_64.tar.xz",
+      "url": "https://github.com/GloriousEggroll/wine-ge-custom/releases/download/GE-Proton8-26/wine-lutris-GE-Proton8-26-x86_64.tar.xz",
+      "sha256": "9cef292850a470b1a2637b22959051ab36784dccdb4966c19607790a1e3a96f1"
+    },
+    {
+      "id": "dxvk-modern",
+      "version": "3.0.2",
+      "kind": "tar.gz",
+      "filename": "dxvk-3.0.2.tar.gz",
+      "url": "https://github.com/doitsujin/dxvk/releases/download/v3.0.2/dxvk-3.0.2.tar.gz",
+      "sha256": "9c538924110a7cdef871ca36dee218c0774124374ffdeb38af4b76be55bdf7c2"
+    },
+    {
+      "id": "dxvk-legacy",
+      "version": "1.10.3",
+      "kind": "tar.gz",
+      "filename": "dxvk-1.10.3.tar.gz",
+      "url": "https://github.com/doitsujin/dxvk/releases/download/v1.10.3/dxvk-1.10.3.tar.gz",
+      "sha256": "8d1a3c912761b450c879f98478ae64f6f6639e40ce6848170a0f6b8596fd53c6"
+    },
+    {
+      "id": "vkd3d-proton",
+      "version": "3.0.1",
+      "kind": "tar.zst",
+      "filename": "vkd3d-proton-3.0.1.tar.zst",
+      "url": "https://github.com/HansKristian-Work/vkd3d-proton/releases/download/v3.0.1/vkd3d-proton-3.0.1.tar.zst",
+      "sha256": "3cf2315522af5e43605ef6d3c41dad91387040bf97199934f3f7ab76caaa2f0c"
+    },
+    {
+      "id": "pcsx2",
+      "version": "2.6.3",
+      "kind": "appimage",
+      "filename": "pcsx2-v2.6.3-linux-appimage-x64-Qt.AppImage",
+      "url": "https://github.com/PCSX2/pcsx2/releases/download/v2.6.3/pcsx2-v2.6.3-linux-appimage-x64-Qt.AppImage",
+      "sha256": "8ce7de8613c17b00b01028a512dd1b81998b6626ebbe93a067e0eb20aeedd5bf"
+    },
+    {
+      "id": "dosbox-staging",
+      "version": "0.82.2",
+      "kind": "tar.xz",
+      "filename": "dosbox-staging-linux-x86_64-v0.82.2.tar.xz",
+      "url": "https://github.com/dosbox-staging/dosbox-staging/releases/download/v0.82.2/dosbox-staging-linux-x86_64-v0.82.2.tar.xz",
+      "sha256": "bc229df72ea103b7865cdca67324772dbffa8e58866477e69a79638b723a0442"
+    },
+    {
+      "id": "playfusion-amiga",
+      "version": "1.0.0",
+      "kind": "erofs",
+      "filename": "amiga-1.0.kzr",
+      "url": "https://github.com/pixelgriffstudios/PlayFusion-Runtimes/releases/download/v1.0.0/amiga-1.0.kzr",
+      "sha256": "92c4b159efd45a19820b871760daa537797eeb3e342f1a80240303c80a7cf085"
+    },
+    {
+      "id": "playfusion-arcade-fbneo",
+      "version": "1.0.0",
+      "kind": "erofs",
+      "filename": "arcade-fbneo-1.0.kzr",
+      "url": "https://github.com/pixelgriffstudios/PlayFusion-Runtimes/releases/download/v1.0.0/arcade-fbneo-1.0.kzr",
+      "sha256": "daf8860698b110611ccbc476c9656d2626211ec428da118dd2d09892e211b4e9"
+    },
+    {
+      "id": "playfusion-atari2600",
+      "version": "1.0.0",
+      "kind": "erofs",
+      "filename": "atari2600-1.0.kzr",
+      "url": "https://github.com/pixelgriffstudios/PlayFusion-Runtimes/releases/download/v1.0.0/atari2600-1.0.kzr",
+      "sha256": "eb0a09a60497fd784bdb9b2d1dcd6ea0a82c915030f5cd0f4f9666bf7c23407c"
+    },
+    {
+      "id": "playfusion-atari7800",
+      "version": "1.0.0",
+      "kind": "erofs",
+      "filename": "atari7800-1.0.kzr",
+      "url": "https://github.com/pixelgriffstudios/PlayFusion-Runtimes/releases/download/v1.0.0/atari7800-1.0.kzr",
+      "sha256": "9ccd0cda4addcf6dfb3714c2a93b1c647e7d7afc7c06d1b4b13f2873b600eb68"
+    },
+    {
+      "id": "playfusion-atarilynx",
+      "version": "1.0.0",
+      "kind": "erofs",
+      "filename": "atarilynx-1.0.kzr",
+      "url": "https://github.com/pixelgriffstudios/PlayFusion-Runtimes/releases/download/v1.0.0/atarilynx-1.0.kzr",
+      "sha256": "784de7d06907db14faf40719ca604623eea5ad5c7990aeb07814e4564f6938a8"
+    },
+    {
+      "id": "playfusion-jaguar",
+      "version": "1.0.0",
+      "kind": "erofs",
+      "filename": "jaguar-1.0.kzr",
+      "url": "https://github.com/pixelgriffstudios/PlayFusion-Runtimes/releases/download/v1.0.0/jaguar-1.0.kzr",
+      "sha256": "2c616021c0482f8f0b8e67b2bda0e5fa1c97516c0a8ea4bca2abeb5e20635a2b"
+    },
+    {
+      "id": "playfusion-dosbox",
+      "version": "1.0.0",
+      "kind": "erofs",
+      "filename": "dosbox-1.0.kzr",
+      "url": "https://github.com/pixelgriffstudios/PlayFusion-Runtimes/releases/download/v1.0.0/dosbox-1.0.kzr",
+      "sha256": "49e86380d241dadd7f3c84e689b936533d1df29e04fb746cd5e105da0b7f6114"
+    },
+    {
+      "id": "playfusion-commodore64",
+      "version": "1.0.0",
+      "kind": "erofs",
+      "filename": "commodore64-1.0.kzr",
+      "url": "https://github.com/pixelgriffstudios/PlayFusion-Runtimes/releases/download/v1.0.0/commodore64-1.0.kzr",
+      "sha256": "2a43048259f860538b3309e8021ebb64fee348fbd7ae3852e375dd12d13bdd7b"
+    },
+    {
+      "id": "playfusion-saturn",
+      "version": "1.0.0",
+      "kind": "erofs",
+      "filename": "saturn-1.0.kzr",
+      "url": "https://github.com/pixelgriffstudios/PlayFusion-Runtimes/releases/download/v1.0.0/saturn-1.0.kzr",
+      "sha256": "74f0145f9bd7df127a20a746c415a15c11ffa2ef9c20467c21bee4dd87f40f75"
+    }
+  ]
+}

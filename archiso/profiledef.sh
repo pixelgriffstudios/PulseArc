@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+
+iso_name="pulsearc"
+iso_label="PULSEARC_$(date +%Y%m)"
+iso_publisher="PulseArc OS Project"
+iso_application="PulseArc OS installer and live environment"
+iso_version="0.0.1"
+install_dir="pulsearc"
+buildmodes=('iso')
+bootmodes=('bios.syslinux' 'uefi.systemd-boot')
+arch="x86_64"
+pacman_conf="pacman.conf"
+airootfs_image_type="squashfs"
+airootfs_image_tool_options=(-comp zstd -Xcompression-level 15 -b 1M)
+file_permissions=(
+  ["/usr/local/bin/pulsearc-firstboot"]="0:0:755"
+  ["/usr/local/bin/pulsearc-session"]="0:0:755"
+  ["/usr/local/bin/pulsearc-audio-select"]="0:0:755"
+  ["/usr/local/bin/pulsearc-appimage"]="0:0:755"
+  ["/usr/local/bin/pulsearc-dosbox-staging"]="0:0:755"
+  ["/usr/local/bin/pulsearc-wine"]="0:0:755"
+  ["/usr/local/bin/pulsearc-playstation-plus-cloud"]="0:0:755"
+  ["/usr/local/bin/pulsearc-steam"]="0:0:755"
+  ["/usr/local/sbin/pulsearc-ssh-firstboot"]="0:0:755"
+  ["/usr/local/sbin/pulsearc-install"]="0:0:755"
+  ["/usr/local/sbin/pulsearc-expand-root"]="0:0:755"
+  ["/home/gamer/.xinitrc"]="1000:1000:755"
+  ["/home/gamer/.bash_profile"]="1000:1000:644"
+  ["/etc/sudoers.d/20-pulsearc-installer"]="0:0:440"
+  ["/usr/share/pulsearc/native-ui"]="0:0:755"
+  ["/usr/lib/pulsearc/core"]="0:0:755"
+  ["/usr/lib/pulsearc/runners/azahar/azahar.AppImage"]="0:0:755"
+  ["/usr/lib/pulsearc/runners/cemu/cemu.AppImage"]="0:0:755"
+  ["/usr/lib/pulsearc/runners/duckstation/duckstation.AppImage"]="0:0:755"
+  ["/usr/lib/pulsearc/runners/pcsx2/pcsx2.AppImage"]="0:0:755"
+  ["/usr/lib/pulsearc/runners/rpcs3/rpcs3.AppImage"]="0:0:755"
+  ["/usr/lib/pulsearc/runners/vita3k/vita3k.AppImage"]="0:0:755"
+  ["/usr/lib/pulsearc/runners/xemu/xemu.AppImage"]="0:0:755"
+  ["/usr/lib/pulsearc/runners/dosbox-staging/dosbox"]="0:0:755"
+  ["/usr/lib/pulsearc/runners/wine-ge/bin/"]="0:0:755"
+)

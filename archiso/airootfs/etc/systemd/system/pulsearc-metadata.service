@@ -1,0 +1,17 @@
+[Unit]
+Description=PulseArc cover and metadata queue
+After=network-online.target pulsearc-media.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=gamer
+Group=gamer
+Environment=PYTHONPATH=/usr/lib/pulsearc/core
+ExecStart=/usr/bin/python -m pulsearc.metadata_daemon
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
+

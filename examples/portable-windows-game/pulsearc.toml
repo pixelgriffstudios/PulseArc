@@ -1,0 +1,24 @@
+[game]
+title = "Example Windows Game"
+platform = "windows"
+entrypoint = "Game.exe"
+working_directory = "."
+arguments = ["-fullscreen"]
+runner = "wine-ge"
+
+# auto: choose DXVK/VKD3D when supported and WineD3D otherwise
+# vulkan: require DXVK or VKD3D-Proton
+# opengl/wined3d: disable DXVK and use Wine's OpenGL translation
+renderer = "auto"
+
+[display]
+internal_width = 1280
+internal_height = 720
+output = "auto"
+integer_scale = false
+
+[input]
+profile = "xbox"
+keyboard_overlay = true
+# Optional. The profile is loaded only while this game runs.
+# antimicrox_profile = "controls/Game.gamecontroller.amgp"

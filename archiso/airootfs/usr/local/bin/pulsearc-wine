@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+wine_root=/usr/lib/pulsearc/runners/wine-ge
+wine="$wine_root/bin/wine"
+wineboot="$wine_root/bin/wineboot"
+prefix="${WINEPREFIX:?PulseArc launch plan did not set WINEPREFIX}"
+mode="${PULSEARC_DXVK:-disabled}"
+mkdir -p "$prefix"
+if [[ ! -e "$prefix/system.reg" ]]; then
+    "$wineboot" -u
+fi
+
+marker="$prefix/.pulsearc-renderer"
+previous="$(cat "$marker" 2>/dev/null || true)"
+if [[ "$mode" != "$previous" ]]; then
+    system32="$prefix/drive_c/windows/system32"
+    syswow64="$prefix/drive_c/windows/syswow64"
+    mkdir -p "$system32" "$syswow64"
+    if [[ "$mode" == modern || "$mode" == legacy-1.10.3 ]]; then
+        source_root="/usr/lib/pulsearc/compat/$mode"
+        cp -f "$source_root/x64/"*.dll "$system32/"
+        cp -f "$source_root/x32/"*.dll "$syswow64/"
+        export WINEDLLOVERRIDES="d3d8,d3d9,d3d10,d3d10_1,d3d10core,d3d11,dxgi=n,b"
+        if [[ "$mode" == modern && -d /usr/lib/pulsearc/compat/vkd3d-proton ]]; then
+            cp -f /usr/lib/pulsearc/compat/vkd3d-proton/x64/*.dll "$system32/"
+            cp -f /usr/lib/pulsearc/compat/vkd3d-proton/x86/*.dll "$syswow64/"
+            export WINEDLLOVERRIDES="$WINEDLLOVERRIDES;d3d12,d3d12core=n,b"
+        fi
+    fi
+    printf '%s\n' "$mode" > "$marker"
+fi
+exec "$wine" "$@"
+

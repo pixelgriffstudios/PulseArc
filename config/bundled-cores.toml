@@ -1,0 +1,67 @@
+# Libretro cores that are not currently shipped by Arch Linux. Each core is
+# extracted from the published PlayFusion 1.0 runtime collection. The outer
+# EROFS image is verified by runtime-lock.json and the extracted binary is
+# verified again here before it enters the PulseArc root filesystem.
+
+[core.puae]
+package = "pulsearc-libretro-puae"
+asset = "playfusion-amiga"
+archive_path = ".config/retroarch/cores/puae_libretro.so"
+target = "/usr/lib/libretro/puae_libretro.so"
+sha256 = "ebfb55ca1e909bffdb0d9c133d619f998e20c4aa0a7e05c1e481da93a286ce8c"
+
+[core.fbneo]
+package = "pulsearc-libretro-fbneo"
+asset = "playfusion-arcade-fbneo"
+archive_path = ".config/retroarch/cores/fbneo_libretro.so"
+target = "/usr/lib/libretro/fbneo_libretro.so"
+sha256 = "d735207c7b0acff80556edaea84d911315b3231f53669f48d5a8913e9b597595"
+
+[core.stella]
+package = "pulsearc-libretro-stella2014"
+asset = "playfusion-atari2600"
+archive_path = ".config/retroarch/cores/stella_libretro.so"
+target = "/usr/lib/libretro/stella_libretro.so"
+sha256 = "d171bb44c891bb6127ebc6ed35cc43fb4b6d5a26199dc687bf1c6cc011fb6ccc"
+
+[core.prosystem]
+package = "pulsearc-libretro-prosystem"
+asset = "playfusion-atari7800"
+archive_path = ".config/retroarch/cores/prosystem_libretro.so"
+target = "/usr/lib/libretro/prosystem_libretro.so"
+sha256 = "c3d9436fee552e03308529ce157231e01cf801e7b32110ecd4bd5e4cce121aba"
+
+[core.handy]
+package = "pulsearc-libretro-handy"
+asset = "playfusion-atarilynx"
+archive_path = ".config/retroarch/cores/handy_libretro.so"
+target = "/usr/lib/libretro/handy_libretro.so"
+sha256 = "281e549a53d411ffda42a65f04d87955298dfd188f6899e3580c500bf90921c4"
+
+[core.virtualjaguar]
+package = "pulsearc-libretro-virtualjaguar"
+asset = "playfusion-jaguar"
+archive_path = ".config/retroarch/cores/virtualjaguar_libretro.so"
+target = "/usr/lib/libretro/virtualjaguar_libretro.so"
+sha256 = "77f6b1b9c156e0b0c23645f2c4c609b9fd5c2e8fb9c66cd2bbf1a9b9d714468e"
+
+[core.dosbox-pure]
+package = "pulsearc-libretro-dosbox-pure"
+asset = "playfusion-dosbox"
+archive_path = ".config/retroarch/cores/dosbox_pure_libretro.so"
+target = "/usr/lib/libretro/dosbox_pure_libretro.so"
+sha256 = "ef411f1b9a2655652c74b2306eee9da11bd6ed4225c05ef6143b3c54cf908f21"
+
+[core.vice-x64sc]
+package = "pulsearc-libretro-vice-x64sc"
+asset = "playfusion-commodore64"
+archive_path = ".config/retroarch/cores/vice_x64sc_libretro.so"
+target = "/usr/lib/libretro/vice_x64sc_libretro.so"
+sha256 = "68dd3723353cdfe058326b5fca51e9a447440245724bf04d30a7605ebc595bbd"
+
+[core.beetle-saturn]
+package = "pulsearc-libretro-beetle-saturn"
+asset = "playfusion-saturn"
+archive_path = ".config/retroarch/cores/mednafen_saturn_libretro.so"
+target = "/usr/lib/libretro/mednafen_saturn_libretro.so"
+sha256 = "a741a3185085352f3873ae73bf2541014550f44ecc2fe53d270bc29c386541c7"

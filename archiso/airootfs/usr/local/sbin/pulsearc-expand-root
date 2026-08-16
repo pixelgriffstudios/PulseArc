@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+stamp=/var/lib/pulsearc/.root-expanded
+[[ -e "$stamp" ]] && exit 0
+
+root_source="$(findmnt -nro SOURCE /)"
+root_part="$(readlink -f "$root_source")"
+parent_name="$(lsblk -ndo PKNAME "$root_part")"
+part_number="$(lsblk -ndo PARTN "$root_part")"
+
+[[ -n "$parent_name" && -n "$part_number" ]] || {
+    echo "Unable to identify the PulseArc root partition" >&2
+    exit 1
+}
+
+disk="/dev/$parent_name"
+
+# A raw release image contains a backup GPT header at the end of the image.
+# Move it to the end of the physical target, grow the root partition, and then
+# let Btrfs consume the newly available space. Repeating these commands is safe.
+sgdisk -e "$disk"
+parted --script "$disk" resizepart "$part_number" 100%
+partprobe "$disk" || true
+udevadm settle
+btrfs filesystem resize max /
+
+install -d -m 0755 /var/lib/pulsearc
+touch "$stamp"
+
