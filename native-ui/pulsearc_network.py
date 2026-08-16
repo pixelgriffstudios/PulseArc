@@ -8,6 +8,9 @@ import subprocess
 from typing import Any
 
 
+SYSTEM_SETTINGS_HELPER = "/usr/local/sbin/pulsearc-system-settings"
+
+
 def _run(command: list[str], timeout: int = 15) -> tuple[int, str]:
     try:
         result = subprocess.run(
@@ -92,7 +95,35 @@ def _saved_connections() -> set[str]:
 
 
 def connect_wifi(ssid: str, password: str = "") -> tuple[bool, str]:
-    if ssid in _saved_connections():
+    saved = ssid in _saved_connections()
+    if saved and password:
+        # A failed first attempt can leave NetworkManager with a profile that
+        # has no usable secret.  Replace the PSK explicitly before activating
+        # it so NetworkManager never needs an interactive secret agent.
+        status, output = _run(
+            [
+                "/usr/bin/nmcli",
+                "connection",
+                "modify",
+                ssid,
+                "802-11-wireless-security.key-mgmt",
+                "wpa-psk",
+                "802-11-wireless-security.psk",
+                password,
+                "connection.autoconnect",
+                "yes",
+            ],
+            timeout=15,
+        )
+        if status == 0:
+            status, output = _run(["/usr/bin/nmcli", "connection", "up", "id", ssid], timeout=35)
+            if status == 0:
+                return True, output or "CONNECTED"
+        # If the saved profile is malformed, remove only that selected Wi-Fi
+        # profile and let NetworkManager create a clean one below.
+        _run(["/usr/bin/nmcli", "connection", "delete", "id", ssid], timeout=12)
+        saved = False
+    if saved:
         status, output = _run(["/usr/bin/nmcli", "connection", "up", "id", ssid], timeout=30)
         if status == 0:
             return True, output or "CONNECTED"
@@ -111,7 +142,18 @@ def disconnect_wifi() -> tuple[bool, str]:
 _DEVICE_RE = re.compile(r"^Device\s+([0-9A-Fa-f:]{17})\s+(.+)$")
 
 
+def _ensure_bluetooth_ready() -> bool:
+    status, output = _run(["/usr/bin/systemctl", "is-active", "bluetooth.service"], timeout=3)
+    if status == 0 and output.strip() == "active":
+        return True
+    _run(["/usr/bin/sudo", "-n", SYSTEM_SETTINGS_HELPER, "bluetooth-on"], timeout=12)
+    status, output = _run(["/usr/bin/systemctl", "is-active", "bluetooth.service"], timeout=3)
+    return status == 0 and output.strip() == "active"
+
+
 def bluetooth_devices(scan: bool = True) -> list[dict[str, Any]]:
+    if not _ensure_bluetooth_ready():
+        return []
     _run(["/usr/bin/bluetoothctl", "power", "on"], timeout=8)
     if scan:
         _run(["/usr/bin/bluetoothctl", "--timeout", "5", "scan", "on"], timeout=8)
@@ -141,6 +183,8 @@ def bluetooth_devices(scan: bool = True) -> list[dict[str, Any]]:
 
 
 def pair_or_connect_bluetooth(address: str) -> tuple[bool, str]:
+    if not _ensure_bluetooth_ready():
+        return False, "BLUETOOTH SERVICE COULD NOT BE STARTED"
     _run(["/usr/bin/bluetoothctl", "power", "on"], timeout=8)
     status, info = _run(["/usr/bin/bluetoothctl", "info", address], timeout=8)
     if status == 0 and "Connected: yes" in info:

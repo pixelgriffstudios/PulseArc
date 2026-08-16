@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+case "${1:-}" in
+  bluetooth-on)
+    /usr/bin/rfkill unblock bluetooth 2>/dev/null || true
+    /usr/bin/systemctl enable --now bluetooth.service
+    ;;
+  timezone)
+    zone=${2:-}
+    case "$zone" in
+      America/New_York|America/Chicago|America/Denver|America/Los_Angeles|America/Anchorage|Pacific/Honolulu|UTC) ;;
+      *) echo "Unsupported PulseArc time zone" >&2; exit 2 ;;
+    esac
+    /usr/bin/timedatectl set-timezone "$zone"
+    ;;
+  *)
+    echo "Usage: pulsearc-system-settings {bluetooth-on|timezone ZONE}" >&2
+    exit 2
+    ;;
+esac

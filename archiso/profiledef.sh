@@ -23,6 +23,7 @@ file_permissions=(
   ["/usr/local/bin/pulsearc-steam"]="0:0:755"
   ["/usr/local/sbin/pulsearc-ssh-firstboot"]="0:0:755"
   ["/usr/local/sbin/pulsearc-install"]="0:0:755"
+  ["/usr/local/sbin/pulsearc-system-settings"]="0:0:755"
   ["/usr/local/sbin/pulsearc-expand-root"]="0:0:755"
   ["/home/gamer/.xinitrc"]="1000:1000:755"
   ["/home/gamer/.bash_profile"]="1000:1000:644"

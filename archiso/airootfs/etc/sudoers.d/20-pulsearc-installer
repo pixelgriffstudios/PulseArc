@@ -1,3 +1,4 @@
 gamer ALL=(root) NOPASSWD: /usr/local/sbin/pulsearc-install
 gamer ALL=(root) NOPASSWD: /usr/local/sbin/pulsearc-update --apply
 gamer ALL=(root) NOPASSWD: /usr/bin/systemctl reboot, /usr/bin/systemctl poweroff
+gamer ALL=(root) NOPASSWD: /usr/local/sbin/pulsearc-system-settings *

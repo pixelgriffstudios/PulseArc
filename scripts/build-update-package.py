@@ -22,6 +22,7 @@ EXACT = (
     (AIROOT / "usr/local/bin/pulsearc-session", Path("usr/local/bin/pulsearc-session")),
     (AIROOT / "usr/local/bin/pulsearc-audio-select", Path("usr/local/bin/pulsearc-audio-select")),
     (AIROOT / "usr/local/sbin/pulsearc-update", Path("usr/local/sbin/pulsearc-update")),
+    (AIROOT / "usr/local/sbin/pulsearc-system-settings", Path("usr/local/sbin/pulsearc-system-settings")),
     (AIROOT / "etc/sudoers.d/20-pulsearc-installer", Path("etc/sudoers.d/20-pulsearc-installer")),
 )
 

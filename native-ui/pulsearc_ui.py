@@ -38,6 +38,17 @@ os.environ.setdefault("SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS", "1")
 
 import pygame
 
+
+TIMEZONE_CHOICES = (
+    ("America/New_York", "EASTERN (EST/EDT)"),
+    ("America/Chicago", "CENTRAL (CST/CDT)"),
+    ("America/Denver", "MOUNTAIN (MST/MDT)"),
+    ("America/Los_Angeles", "PACIFIC (PST/PDT)"),
+    ("America/Anchorage", "ALASKA"),
+    ("Pacific/Honolulu", "HAWAII"),
+    ("UTC", "UTC"),
+)
+
 from pulsearc_network import (
     bluetooth_devices,
     connect_wifi,
@@ -1042,7 +1053,11 @@ class PulseArcUI:
         self.wifi_entries: list[dict[str, Any]] = []
         self.wifi_target = ""
         self.wifi_password = ""
+        self.wifi_scanning = False
+        self.wifi_connecting = False
         self.bluetooth_entries: list[dict[str, Any]] = []
+        self.bluetooth_scanning = False
+        self.bluetooth_connecting = False
         self.profiles = load_profiles(PROFILES_PATH)
         try:
             requested_profile = ACTIVE_PROFILE_PATH.read_text(encoding="utf-8").strip().casefold()
@@ -1101,6 +1116,7 @@ class PulseArcUI:
             "BACK",
         )
         self.settings = self._load_settings()
+        self._apply_timezone(persist_system=False)
         self._apply_theme(str(self.settings.get("theme", "pulsearc-classic")), persist=False)
         self._apply_master_volume()
         self.sounds = self._build_sounds()
@@ -1122,6 +1138,7 @@ class PulseArcUI:
             "menu_sounds": True,
             "artwork_downloads": True,
             "start_screen": "home",
+            "timezone": "America/New_York",
             "runtime_resolution": {"nintendo-64": "2x"},
             "theme": "pulsearc-classic",
             "screensaver": "retro-grid",
@@ -1136,6 +1153,24 @@ class PulseArcUI:
             if isinstance(stored, dict):
                 defaults.update({key: stored[key] for key in defaults.keys() & stored.keys()})
         return defaults
+
+    def _apply_timezone(self, persist_system: bool = True) -> None:
+        zone = str(self.settings.get("timezone", "America/New_York"))
+        valid = {value for value, _label in TIMEZONE_CHOICES}
+        if zone not in valid:
+            zone = "America/New_York"
+            self.settings["timezone"] = zone
+        # This immediately fixes all times rendered by PulseArc and every app
+        # launched from it, even on an older installation without the helper.
+        os.environ["TZ"] = zone
+        if hasattr(time, "tzset"):
+            time.tzset()
+        if persist_system:
+            subprocess.Popen(
+                ["/usr/bin/sudo", "-n", "/usr/local/sbin/pulsearc-system-settings", "timezone", zone],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
 
     def _save_settings(self) -> None:
         try:
@@ -1829,7 +1864,7 @@ class PulseArcUI:
         if self.screen_name == "bluetooth":
             return len(self.bluetooth_entries) + 2
         if self.screen_name == "settings":
-            return 9
+            return 10
         if self.screen_name == "runtime-settings":
             return 2
         if self.screen_name == "extras":
@@ -2285,13 +2320,25 @@ class PulseArcUI:
         self.overlay_selection = min(self.tv_group_selection, max(0, len(self.tv_groups) - 1))
 
     def _refresh_wifi(self) -> None:
+        if self.wifi_scanning:
+            self.status = "WI-FI SCAN IS ALREADY RUNNING"
+            return
+        self.wifi_scanning = True
         self.status = "SCANNING FOR WI-FI NETWORKS"
-        self.wifi_entries = wifi_networks(rescan=True)
-        self.overlay_selection = 0
-        self.status = (
-            f"FOUND {len(self.wifi_entries)} WI-FI NETWORKS"
-            if self.wifi_entries else "NO WI-FI NETWORKS FOUND; CHECK THE ADAPTER"
-        )
+
+        def worker() -> None:
+            try:
+                entries = wifi_networks(rescan=True)
+                self.wifi_entries = entries
+                self.overlay_selection = 0
+                self.status = (
+                    f"FOUND {len(entries)} WI-FI NETWORKS"
+                    if entries else "NO WI-FI NETWORKS FOUND; CHECK THE ADAPTER"
+                )
+            finally:
+                self.wifi_scanning = False
+
+        threading.Thread(target=worker, name="pulsearc-wifi-scan", daemon=True).start()
 
     def _select_wifi(self, network: dict[str, Any]) -> None:
         ssid = str(network.get("ssid", "")).strip()
@@ -2301,14 +2348,8 @@ class PulseArcUI:
             self.status = f"{ssid} IS ALREADY CONNECTED"
             return
         security = str(network.get("security", "OPEN")).upper()
-        self.status = f"CONNECTING TO {ssid}"
-        success, message = connect_wifi(ssid)
-        if success:
-            self.status = f"CONNECTED TO {ssid}"
-            self._refresh_wifi()
-            return
         if security in {"", "--", "OPEN"}:
-            self.status = f"WI-FI CONNECTION FAILED: {message[-80:]}"
+            self._start_wifi_connection(ssid, "")
             return
         self.wifi_target = ssid
         self.wifi_password = ""
@@ -2321,23 +2362,51 @@ class PulseArcUI:
             return
         ssid = self.wifi_target
         password = self.wifi_password
-        self.status = f"CONNECTING TO {ssid}"
-        success, message = connect_wifi(ssid, password)
         self.wifi_password = ""
-        if success:
-            self.status = f"CONNECTED TO {ssid}"
-            self._open("wifi")
-        else:
-            self.status = f"WI-FI CONNECTION FAILED: {message[-80:]}"
+        self._start_wifi_connection(ssid, password)
+
+    def _start_wifi_connection(self, ssid: str, password: str) -> None:
+        if self.wifi_connecting:
+            self.status = "A WI-FI CONNECTION IS ALREADY IN PROGRESS"
+            return
+        self.wifi_connecting = True
+        self.status = f"CONNECTING TO {ssid}"
+
+        def worker() -> None:
+            try:
+                success, message = connect_wifi(ssid, password)
+                if success:
+                    self.status = f"CONNECTED TO {ssid}"
+                    self.wifi_entries = wifi_networks(rescan=False)
+                    self.screen_name = "wifi"
+                    self.overlay_selection = 0
+                else:
+                    self.status = f"WI-FI CONNECTION FAILED: {message[-80:]}"
+            finally:
+                self.wifi_connecting = False
+
+        threading.Thread(target=worker, name="pulsearc-wifi-connect", daemon=True).start()
 
     def _refresh_bluetooth(self) -> None:
+        if self.bluetooth_scanning:
+            self.status = "BLUETOOTH SCAN IS ALREADY RUNNING"
+            return
+        self.bluetooth_scanning = True
         self.status = "SCANNING FOR BLUETOOTH DEVICES; PUT THE CONTROLLER IN PAIRING MODE"
-        self.bluetooth_entries = bluetooth_devices(scan=True)
-        self.overlay_selection = 0
-        self.status = (
-            f"FOUND {len(self.bluetooth_entries)} BLUETOOTH DEVICES"
-            if self.bluetooth_entries else "NO BLUETOOTH DEVICES FOUND; PRESS X TO SCAN AGAIN"
-        )
+
+        def worker() -> None:
+            try:
+                entries = bluetooth_devices(scan=True)
+                self.bluetooth_entries = entries
+                self.overlay_selection = 0
+                self.status = (
+                    f"FOUND {len(entries)} BLUETOOTH DEVICES"
+                    if entries else "NO BLUETOOTH DEVICES FOUND; PRESS X TO SCAN AGAIN"
+                )
+            finally:
+                self.bluetooth_scanning = False
+
+        threading.Thread(target=worker, name="pulsearc-bluetooth-scan", daemon=True).start()
 
     def _select_bluetooth(self, device: dict[str, Any]) -> None:
         address = str(device.get("address", ""))
@@ -3031,9 +3100,14 @@ class PulseArcUI:
             current = str(self.settings.get("start_screen", "home"))
             self.settings["start_screen"] = "3d-library" if current == "home" else "home"
         elif index == 6:
+            values = tuple(value for value, _label in TIMEZONE_CHOICES)
+            current = str(self.settings.get("timezone", "America/New_York"))
+            self.settings["timezone"] = values[(values.index(current) + 1) % len(values)] if current in values else values[0]
+            self._apply_timezone()
+        elif index == 7:
             self._open("runtime-settings")
             return
-        elif index == 7:
+        elif index == 8:
             self._open("controllers")
             return
         else:
@@ -5771,6 +5845,8 @@ class PulseArcUI:
     def _draw_settings(self) -> None:
         desktop = pygame.display.get_desktop_sizes()[0] if pygame.display.get_desktop_sizes() else LOGICAL_SIZE
         graphics = read_json(GRAPHICS_PATH, {})
+        timezone = str(self.settings.get("timezone", "America/New_York"))
+        timezone_label = next((label for value, label in TIMEZONE_CHOICES if value == timezone), timezone)
         values = (
             f"DISPLAY POLICY       {str(self.settings.get('display_policy', 'auto')).upper()} ({desktop[0]}×{desktop[1]} OUTPUT)",
             f"AUDIO OUTPUT         {str(self.settings.get('audio_policy', 'hdmi')).upper()}",
@@ -5778,20 +5854,21 @@ class PulseArcUI:
             f"MENU SOUNDS          {'ON' if self.settings.get('menu_sounds', True) else 'OFF'}",
             f"ARTWORK DOWNLOADS    {'ON' if self.settings.get('artwork_downloads', True) else 'OFF'}",
             f"START SCREEN         {'3D PLAZA' if self.settings.get('start_screen') == '3d-library' else 'MAIN MENU'}",
+            f"TIME ZONE            {timezone_label}",
             "RUNTIME SETTINGS     INTERNAL RESOLUTION",
             f"CONTROLLER TEST      {len(self.controllers)} CONNECTED",
             "BACK",
         )
         for index, title in enumerate(values):
-            y = 132 + index * 55
+            y = 112 + index * 50
             if index == self.overlay_selection:
-                pygame.draw.rect(self.canvas, PINK, (90, y, 1080, 45), 2)
-            self._text(title, "body", WHITE, (105, y + 11))
+                pygame.draw.rect(self.canvas, PINK, (90, y, 1080, 41), 2)
+            self._text(title, "body", WHITE, (105, y + 9))
         self._text(
             f"Renderer: {graphics.get('session_backend', 'x11')} / {graphics.get('windows_renderer', 'auto')}  •  Network: {self.address}",
             "small",
             MUTED,
-            (105, 640),
+            (105, 625),
         )
 
     def _draw_runtime_settings(self) -> None:
