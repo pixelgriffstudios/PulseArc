@@ -75,3 +75,12 @@ registry, graphics fallback policy, offline SSD recovery installer, save and
 cheat inventories, cover queue, and locked internal runtimes. It is intended
 for testing on spare hardware. Back up important disks before installing and
 report hardware-specific issues through the repository issue tracker.
+
+## User documentation
+
+- [PulseArc Wiki](https://github.com/pixelgriffstudios/PulseArc/wiki)
+- [Install and first boot](https://github.com/pixelgriffstudios/PulseArc/wiki/Getting-Started)
+- [Make a portable Windows game cart](https://github.com/pixelgriffstudios/PulseArc/wiki/Windows-Game-Carts)
+- [Use loose ROMs and removable media](https://github.com/pixelgriffstudios/PulseArc/wiki/Loose-ROMs-and-Removable-Media)
+- [BIOS, firmware, and runtime guide](https://github.com/pixelgriffstudios/PulseArc/wiki/BIOS-Firmware-and-Runtimes)
+- [Current beta release](https://github.com/pixelgriffstudios/PulseArc/releases/tag/v0.1.0-beta.1)
